@@ -1,0 +1,204 @@
+/* 登录页面样式 */
+.login-container {
+  min-block-size: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+}
+
+.login-content {
+  display: flex;
+  inline-size: 85%;
+  max-inline-size: 1200px;
+  block-size: 600px;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.login-left {
+  flex: 6;
+  background: #f8f9fa;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-right {
+  flex: 4;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.login-header {
+  text-align: center;
+  margin-block-end: 30px;
+}
+
+.login-header h1 {
+  color: #2c3e50;
+  font-size: 28px;
+  font-weight: 600;
+  margin-block-end: 8px;
+}
+
+.login-header p {
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+.login-form {
+  inline-size: 100%;
+}
+
+.form-group {
+  margin-block-end: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-block-end: 8px;
+  font-weight: 500;
+  color: #2d3748;
+  font-size: 14px;
+}
+
+.form-input {
+  inline-size: 100%;
+  padding: 14px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  background: #fafafa;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  background: #fff;
+}
+
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-block-end: 25px;
+  font-size: 14px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: #5a6c7d;
+}
+
+.checkbox-label input {
+  margin-inline-end: 8px;
+}
+
+.forgot-password {
+  color: #3498db;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.forgot-password:hover {
+  color: #2980b9;
+  text-decoration: underline;
+}
+
+.login-btn {
+  inline-size: 100%;
+  padding: 14px;
+  background: #2a5caa;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-block-end: 20px;
+}
+
+.login-btn:hover {
+  background: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+}
+
+.register-link {
+  text-align: center;
+  margin-block-start: 20px;
+  font-size: 14px;
+  color: #7f8c8d;
+}
+
+.register-link a {
+  color: #3498db;
+  text-decoration: none;
+  font-weight: 500;
+  margin-inline-start: 5px;
+  transition: color 0.2s;
+}
+
+.register-link a:hover {
+  color: #2980b9;
+  text-decoration: underline;
+}
+
+/* .register-form { */
+  /* 用v-if控制显示，这里不需要display: none */
+/* } */
+
+.name-fields {
+  display: flex;
+  gap: 15px;
+}
+
+.name-fields .form-group {
+  flex: 1;
+}
+
+/* 响应式设计 */
+@media (max-width: 968px) {
+  .login-content {
+    flex-direction: column;
+    block-size: auto;
+    inline-size: 90%;
+    margin: 40px 0;
+  }
+
+  .login-left {
+    block-size: 250px;
+    flex: none;
+  }
+
+  .login-right {
+    flex: none;
+    padding: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-right {
+    padding: 20px;
+  }
+
+  .form-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .name-fields {
+    flex-direction: column;
+    gap: 0;
+  }
+}
