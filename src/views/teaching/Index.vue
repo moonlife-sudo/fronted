@@ -1,10 +1,15 @@
+<!-- src/views/teaching/Index.vue -->
 <template>
-    <div>
-        <h1>智慧课堂系统</h1>
-        <p>正在开发中...</p>
-        <button @click="$router.push('/')">返回首页</button>
-    </div>
+  <div class="teaching-index">
+    <h1>智能教学</h1>
+    <p>欢迎使用智能教学系统</p>
+  </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+export default defineComponent({
+  name: 'TeachingIndex'
+})
 </script>

@@ -1,43 +1,100 @@
+// router/index.ts
 import { createRouter, createWebHistory } from 'vue-router'
-
-// 使用相对路径导入，避免路径别名问题
-import Home from '../views/Home.vue'
-import Login from '../views/auth/Login.vue'
+import Home from '@/views/Home.vue'
 
 const routes = [
   {
     path: '/',
-    name: 'Home',
-    component: Home,
-    meta: { requiresAuth: true },
+    component: () => import('@/components/layout/AppLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'Home',
+        component: Home,
+      },
+      // 智能教学模块路由
+      {
+        path: '/teaching',
+        name: 'Teaching',
+        component: () => import('@/views/teaching/Index.vue'),
+      },
+      {
+        path: '/teaching/resources',
+        name: 'TeachingResources',
+        component: () => import('@/views/teaching/Resources.vue'),
+      },
+      {
+        path: '/teaching/attendance',
+        name: 'TeachingAttendance',
+        component: () => import('@/views/teaching/Attendance.vue'),
+      },
+      {
+        path: '/teaching/homework',
+        name: 'TeachingHomework',
+        component: () => import('@/views/teaching/Homework.vue'),
+      },
+      {
+        path: '/teaching/grades',
+        name: 'TeachingGrades',
+        component: () => import('@/views/teaching/Grades.vue'),
+      },
+      {
+        path: '/teaching/students',
+        name: 'TeachingStudents',
+        component: () => import('@/views/teaching/Students.vue'),
+      },
+      {
+        path: '/teaching/leave',
+        name: 'TeachingLeave',
+        component: () => import('@/views/teaching/Leave.vue'),
+      },
+
+      // 资源预约模块路由
+      {
+        path: '/reservation',
+        name: 'Reservation',
+        component: () => import('@/views/reservation/Index.vue'),
+      },
+      {
+        path: '/reservation/classroom',
+        name: 'ReservationClassroom',
+        component: () => import('@/views/reservation/Classroom.vue'),
+      },
+      {
+        path: '/reservation/history',
+        name: 'ReservationHistory',
+        component: () => import('@/views/reservation/History.vue'),
+      },
+
+      // 校园生活模块路由
+      {
+        path: '/campus',
+        name: 'Campus',
+        component: () => import('@/views/campus/Index.vue'),
+      },
+      {
+        path: '/campus/library',
+        name: 'CampusLibrary',
+        component: () => import('@/views/campus/Library.vue'),
+      },
+      {
+        path: '/campus/news',
+        name: 'CampusNews',
+        component: () => import('@/views/campus/News.vue'),
+      },
+    ],
   },
   {
     path: '/login',
     name: 'Login',
-    component: Login,
-    meta: { requiresGuest: true },
+    component: () => import('@/views/auth/Login.vue'),
+    meta: { noLayout: true },
   },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
-})
-
-// 修正路由守卫，避免在文件顶部使用store
-router.beforeEach((to, from, next) => {
-  // 动态导入store，避免循环依赖
-  import('../stores/authStore.ts').then(({ useAuthStore }) => {
-    const authStore = useAuthStore()
-
-    if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-      next('/login')
-    } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
-      next('/')
-    } else {
-      next()
-    }
-  })
 })
 
 export default router

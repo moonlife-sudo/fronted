@@ -1,13 +1,25 @@
+<!-- App.vue -->
 <template>
   <div id="app">
-    <router-view />
+    <AppLayout v-if="!$route.meta?.noLayout">
+      <router-view />
+    </AppLayout>
+    <router-view v-else />
   </div>
 </template>
 
-<script setup>
-// 主应用组件，只需要包含路由视图
+<script lang="ts">
+import { defineComponent } from 'vue';
+import AppLayout from '@/components/layout/AppLayout.vue';
+
+export default defineComponent({
+  name: 'App',
+  components: {
+    AppLayout
+  }
+});
 </script>
 
 <style>
-/* 全局样式已经在main.ts中导入 */
+/* 全局样式保持不变 */
 </style>

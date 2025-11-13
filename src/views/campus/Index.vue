@@ -1,10 +1,15 @@
+<!-- src/views/campus/Index.vue -->
 <template>
-    <div>
-        <h1>校园生活系统</h1>
-        <p>正在开发中...</p>
-        <button @click="$router.push('/')">返回首页</button>
-    </div>
+  <div class="campus-index">
+    <h1>校园生活</h1>
+    <p>校园生活服务首页</p>
+  </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+export default defineComponent({
+  name: 'CampusIndex'
+})
 </script>
