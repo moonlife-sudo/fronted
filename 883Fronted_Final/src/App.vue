@@ -69,6 +69,12 @@ export default {
         '/student/library',
         '/student/classroom',
         // 教师路由  
+        '/teacher/students',
+        '/teacher/resources', 
+        '/teacher/attendance',
+        '/teacher/grades',
+        '/teacher/homework',
+        '/teacher/leave',
         '/teacher/library',
         '/teacher/classroom',
         // 管理员路由

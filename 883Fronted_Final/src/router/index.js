@@ -5,25 +5,16 @@ import TeacherLayout from '@/components/layout/TeaLayout.vue'
 import StudentLayout from '@/components/layout/StuLayout.vue'
 
 const routes = [
-  // 根路径重定向 - 根据用户角色重定向到对应首页
+  // 根路径重定向到学生首页
   {
     path: '/',
-    redirect: () => {
-      const userRole = localStorage.getItem('userRole') || 'student'
-      switch (userRole) {
-        case 'admin': return '/admin/home'
-        case 'teacher': return '/teacher/resourcehome'
-        case 'student': return '/student/home'
-        default: return '/student/home'
-      }
-    }
+    redirect: '/student/resourcehome'
   },
-  
+ 
   // 学生路由
   {
     path: '/student',
     component: StudentLayout,
-    //meta: { role: 'student' },
     children: [
       {
         path: 'profile',
@@ -62,13 +53,13 @@ const routes = [
         component: () => import('../views/Student/Teaching/StuHomework_Detail.vue'),
         meta: { showSidebar: true }
       },
-            {
+      {
         path: 'leave',
         name: 'StudentLeave',
         component: () => import('../views/Student/Teaching/StuLeave.vue'),
         meta: { showSidebar: true }
       },
-       {
+      {
         path: 'classresource',
         name: 'StudentClassResource',
         component: () => import('../views/Student/Teaching/StuClassResource.vue'),
@@ -76,7 +67,7 @@ const routes = [
       },
 
       // 学生资源相关路由
-       {
+      {
         path: 'resourcehome',
         name: 'StudentResourceHome',
         component: () => import('../views/Student/Resource/StuResourceHome.vue'),
@@ -94,9 +85,6 @@ const routes = [
         component: () => import('../views/Student/Resource/StuClassroom.vue'),
         meta: { showSidebar: true }
       },
-
-      // 学生校园相关路由
-
     ]
   },
   
@@ -104,10 +92,60 @@ const routes = [
   {
     path: '/teacher',
     component: TeacherLayout,
-    //meta: { role: 'teacher' },
     children: [
       {
-        path: 'resourcehome',  // 注意：这里是 resourcehome，不是 home
+        path: 'profile',
+        name: 'TeacherProfile',
+        component: () => import('../views/Teacher/TeacherProfile.vue'),
+        meta: { showSidebar: false }
+      },
+      // 教师教学功能路由
+      {
+        path: 'teachinghome',
+        name: 'TeacherTeachingIndex',
+        component: () => import('../views/Teacher/Teaching/Teateaching_Index.vue'),
+        meta: { showSidebar: true }
+      },
+      {
+        path: 'attendance',
+        name: 'TeacherAttendance',
+        component: () => import('../views/Teacher/Teaching/TeaAttendance.vue'),
+        meta: { showSidebar: true }
+      },
+      {
+        path: 'grades',
+        name: 'TeacherGrades',
+        component: () => import('../views/Teacher/Teaching/TeaGrades.vue'),
+        meta: { showSidebar: true }
+      },
+      {
+        path: 'homework',
+        name: 'TeacherHomework',
+        component: () => import('../views/Teacher/Teaching/TeaHomework.vue'),
+        meta: { showSidebar: true }
+      },
+      {
+        path: 'resources',
+        name: 'TeacherResources',
+        component: () => import('../views/Teacher/Teaching/TeaResources.vue'),
+        meta: { showSidebar: true }
+      },
+      {
+        path: 'students',
+        name: 'TeacherStudents',
+        component: () => import('../views/Teacher/Teaching/TeaStudents.vue'),
+        meta: { showSidebar: true }
+      },
+      {
+        path: 'leave',
+        name: 'TeacherLeave',
+        component: () => import('../views/Teacher/Teaching/TeachingLeave.vue'),
+        meta: { showSidebar: true }
+      },
+
+      // 教师资源相关路由
+      {
+        path: 'resourcehome', 
         name: 'TeacherHome',
         component: () => import('../views/Teacher/Resource/TeaResourceHome.vue'),
         meta: { showSidebar: false }
@@ -124,12 +162,6 @@ const routes = [
         component: () => import('../views/Teacher/Resource/TeaClassroom.vue'),
         meta: { showSidebar: true }
       },
-      {
-        path: 'profile',
-        name: 'TeacherProfile',
-        component: () => import('../views/Teacher/TeacherProfile.vue'),
-        meta: { showSidebar: false }
-      }
     ]
   },
   
@@ -137,7 +169,6 @@ const routes = [
   {
     path: '/admin',
     component: AdminLayout,
-    //meta: { role: 'admin' },
     children: [
       {
         path: 'home',
@@ -183,34 +214,5 @@ const router = createRouter({
   history: createWebHistory(),
   routes
 })
-
-// 路由守卫 - 修正重定向逻辑
-/*
-router.beforeEach((to, from, next) => {
-  // 获取用户角色（从Vuex或localStorage）
-  const userRole = localStorage.getItem('userRole') || 'teacher'
-  
-  // 检查路由权限
-  if (to.meta.role && to.meta.role !== userRole) {
-    // 无权限访问，重定向到对应用户的首页
-    switch (userRole) {
-      case 'admin':
-        next('/admin/home')
-        break
-      case 'teacher':
-        next('/teacher/resourcehome')  // 注意：这里是 resourcehome
-        break
-      case 'student':
-        next('/student/home')
-        break
-      default:
-        next('/student/home')
-    }
-    return
-  }
-  
-  next()
-})
-  */
 
 export default router

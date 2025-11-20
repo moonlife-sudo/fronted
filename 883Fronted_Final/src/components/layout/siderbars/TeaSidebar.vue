@@ -31,18 +31,40 @@ export default {
 
     // 菜单配置（第二层级）- 根据PDF和接口文档重新设计
     const menuConfig = {
-    resource: [
+      teaching: [
         {
+          name: '教学管理',
           children: [
-            { name: '教室预约', path: '/teacher/classroom' },
+            { name: '学生管理', path: '/teacher/students'},
+            { name: '课程资源', path: '/teacher/resources' },
+            { name: '考勤管理', path: '/teacher/attendance'},
+            { name: '成绩管理', path: '/teacher/grades'},
+            { name: '作业管理', path: '/teacher/homework' },
+            { name: '请假管理', path: '/teacher/leave' },
+          ]
+        }
+      ],
+      resource: [
+        {
+          name: '资源管理',
+          children: [
+            { name: '教室预约', path: '/teacher/classroom'},
             { name: '书籍借阅', path: '/teacher/library' }
           ]
         }
       ],
     }
+
     // 计算当前模块的菜单
     const currentMenuGroups = computed(() => {
-     if (route.path.startsWith('/teacher/classroom')) {
+      if (route.path.startsWith('/teacher/students') || 
+          route.path.startsWith('/teacher/resources') ||
+          route.path.startsWith('/teacher/attendance') ||
+          route.path.startsWith('/teacher/grades') ||
+          route.path.startsWith('/teacher/homework') ||
+          route.path.startsWith('/teacher/leave')) {
+        return menuConfig.teaching
+      } else if (route.path.startsWith('/teacher/classroom')) {
         return menuConfig.resource
       } else if (route.path.startsWith('/teacher/library')) {
         return menuConfig.resource
@@ -52,11 +74,17 @@ export default {
 
     // 计算当前模块标题
     const currentModuleTitle = computed(() => {
-      if (route.path.startsWith('/teaching')) return '智能教学'
-      if (route.path.startsWith('/reservation')) return '资源预约'
-      if (route.path.startsWith('/campus')) return '校园生活'
-      if (route.path.startsWith('/teacher/classroom')) return '资源管理'
-      if (route.path.startsWith('/teacher/library')) return '资源管理'
+      if (route.path.startsWith('/teacher/students') || 
+          route.path.startsWith('/teacher/resources') ||
+          route.path.startsWith('/teacher/attendance') ||
+          route.path.startsWith('/teacher/grades') ||
+          route.path.startsWith('/teacher/homework') ||
+          route.path.startsWith('/teacher/leave')) {
+        return '教学管理'
+      } else if (route.path.startsWith('/teacher/classroom') ||
+          route.path.startsWith('/teacher/library')) {
+        return '资源管理'
+      }
       return '功能菜单'
     })
 
