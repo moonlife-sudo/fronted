@@ -45,7 +45,7 @@ export default {
 
     // 最高层级菜单
     const topLevelMenu = ref([
-      { name: '首页', path: '/' },
+      { name: '首页', path: '/home' },
       { name: '智能教学', path: '/student/teachinghome' },
       { name: '资源管理', path: '/student/resourcehome' },
       { name: '校园生活', path: '/student/campushome' }

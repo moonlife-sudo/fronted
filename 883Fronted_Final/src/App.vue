@@ -68,6 +68,8 @@ export default {
         '/student/leave',
         '/student/library',
         '/student/classroom',
+        '/student/studorm',
+        '/student/forum',
         // 教师路由  
         '/teacher/students',
         '/teacher/resources', 
@@ -79,6 +81,7 @@ export default {
         '/teacher/classroom',
         // 管理员路由
         '/admin/dorm',
+        '/admin/dormassign',
         '/admin/approve',
         '/admin/classroom',
         '/admin/library'

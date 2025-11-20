@@ -8,7 +8,13 @@ const routes = [
   // 根路径重定向到学生首页
   {
     path: '/',
-    redirect: '/student/resourcehome'
+    redirect: '/home'
+  },
+  {
+    path: '/home',
+    name: 'Home',
+        component: () => import('../views/Home.vue'),
+        meta: { showSidebar: false }
   },
  
   // 学生路由
@@ -85,6 +91,31 @@ const routes = [
         component: () => import('../views/Student/Resource/StuClassroom.vue'),
         meta: { showSidebar: true }
       },
+      // 学生校园相关路由
+      {
+        path: 'campushome',
+        name: 'StudentCampusHome',
+        component: () => import('../views/Student/Campus/StuCampusHome.vue'),
+        meta: { showSidebar: false }
+      },
+      {
+        path: 'studorm',
+        name: 'StudentDormAssign',
+        component: () => import('../views/Student/Campus/StuDormAssign.vue'),
+        meta: { showSidebar: false }
+      },
+      {
+        path: 'forum',
+        name: 'StudentForum',
+        component: () => import('../views/Student/Campus/StuForum.vue'),
+        meta: { showSidebar: false }
+      },
+            {
+        path: 'postdetail',
+        name: 'StudentPostDetail',
+        component: () => import('../views/Student/Campus/StuPostDetail.vue'),
+        meta: { showSidebar: false }
+      }
     ]
   },
   
@@ -170,17 +201,31 @@ const routes = [
     path: '/admin',
     component: AdminLayout,
     children: [
+      // 管理员校园相关路由
       {
-        path: 'home',
-        name: 'AdminHome',
-        component: () => import('../views/Admin/AdminResourceHome.vue'),
+        path: 'campushome',
+        name: 'AdminCampusHome',
+        component: () => import('../views/Admin/Campus/AdmCampusHome.vue'),
         meta: { showSidebar: false }
       },
       {
         path: 'dorm',
         name: 'AdminDorm',
         component: () => import('../views/Admin/Campus/AdminDorm.vue'),
-        meta: { showSidebar: true }
+        meta: { showSidebar: false }
+      },
+      {
+        path: 'dormassign',
+        name: 'DormAssign',
+        component: () => import('../views/Admin/Campus/AdmDormAssign.vue'),
+        meta: { showSidebar: false }
+      },
+      // 管理员资源相关路由
+      {
+        path: 'resourcehome',
+        name: 'AdminHome',
+        component: () => import('../views/Admin/Resource/AdminResourceHome.vue'),
+        meta: { showSidebar: false }
       },
       {
         path: 'approve',

@@ -45,10 +45,10 @@ export default {
 
     // 最高层级菜单
     const topLevelMenu = ref([
-      { name: '首页', path: '/' },
-      { name: '智能教学', path: '/teaching' },
-      { name: '资源管理', path: '/admin/home' },
-      { name: '校园生活', path: '/campus' }
+      { name: '首页', path: '/home' },
+      { name: '智能教学', path: '/admin/teaching' },
+      { name: '资源管理', path: '/admin/resourcehome' },
+      { name: '校园生活', path: '/admin/campushome' }
     ])
 
     // 用户头像状态

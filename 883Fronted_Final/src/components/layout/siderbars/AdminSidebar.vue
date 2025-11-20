@@ -40,6 +40,15 @@ export default {
           ]
         }
       ],
+      campus: [
+        {
+          name: '校园生活',
+          children: [
+            { name: '宿舍分配', path: '/admin/dormassign' },
+            { name: '宿舍管理', path: '/admin/dorm' }
+          ]
+        }
+      ]
     }
     // 计算当前模块的菜单
     const currentMenuGroups = computed(() => {
@@ -51,13 +60,19 @@ export default {
       else if (route.path.startsWith('/admin/approve')) {
         return menuConfig.resource
       } 
+      else if (route.path.startsWith('/admin/dorm') ||
+          route.path.startsWith('/admin/dormassign') ) {
+        return menuConfig.campus
+      }
       return []
     })
 
     // 计算当前模块标题
     const currentModuleTitle = computed(() => {
-      if (route.path.startsWith('/teaching')) return '智能教学'
-      if (route.path.startsWith('/campus')) return '校园生活'
+      if (route.path.startsWith('/admin/dorm') ||
+          route.path.startsWith('/admin/dormassign')) {
+        return '校园生活'
+      }
       if (route.path.startsWith('/admin/classroom')) return '资源管理'
       if (route.path.startsWith('/admin/library')) return '资源管理'
       if (route.path.startsWith('/admin/approve')) return '资源管理'

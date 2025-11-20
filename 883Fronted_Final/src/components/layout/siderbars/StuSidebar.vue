@@ -53,6 +53,15 @@ export default {
           ]
         }
       ],
+      campus: [
+        {
+          name: '校园生活',
+          children: [
+            { name: '宿舍分配', path: '/student/studorm' },
+            { name: '校园论坛', path: '/student/forum' }
+          ]
+        }
+      ]
         
 
     }
@@ -71,6 +80,10 @@ export default {
           route.path.startsWith('/student/library')) {
         return menuConfig.resource
       }
+      else if (route.path.startsWith('/student/studorm') ||
+          route.path.startsWith('/student/forum')) {
+        return menuConfig.campus
+      }
 
       return []
     })
@@ -87,6 +100,10 @@ export default {
       } else if (route.path.startsWith('/student/classroom') ||
           route.path.startsWith('/student/library')) {
         return '资源管理'
+      }
+      else if (route.path.startsWith('/student/studorm') ||
+          route.path.startsWith('/student/forum')) {
+        return '校园生活'
       }
       return '功能菜单'
     })
