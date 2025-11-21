@@ -94,20 +94,15 @@ export default {
     }
 
     const enterCourse = (course) => {
-      // 1. 持久化存储当前课程信息，防止刷新丢失
+      // 1. 存数据 (Sidebar 需要用到这些信息)
       localStorage.setItem('currentClassId', course.class_id.toString())
       localStorage.setItem('currentCourseName', course.course_name)
       localStorage.setItem('currentTeacherName', course.teacher_name)
-      
-      // 2. 跳转到考勤页面（作为课程首页）
-      router.push({
-        path: '/student/attendance',
-        query: { 
-          classId: course.class_id,
-          courseName: course.course_name,
-          teacherName: course.teacher_name
-        }
-      })
+
+      // 2. 【核心修复】跳转到新的路由格式
+      // 旧代码: router.push({ path: '/student/attendance', query: ... })  <-- 这个地址已经没了！
+      // 新代码: 直接拼写完整的课程内路径
+      router.push(`/student/course/${course.class_id}/attendance/index`)
     }
 
     onMounted(() => {
@@ -128,18 +123,18 @@ export default {
 <style scoped>
 .student-dashboard {
   padding: 24px;
-  max-width: 1400px;
+  max-inline-size: 1400px;
   margin: 0 auto;
 }
 
 .page-header {
-  margin-bottom: 32px;
+  margin-block-end: 32px;
 }
 
 .page-header h1 {
   font-size: 28px;
   color: var(--text-black, #333);
-  margin-bottom: 8px;
+  margin-block-end: 8px;
 }
 
 .page-header p {
@@ -168,7 +163,7 @@ export default {
 }
 
 .card-cover {
-  height: 120px;
+  block-size: 120px;
   padding: 16px;
   display: flex;
   align-items: flex-start;
@@ -192,14 +187,14 @@ export default {
   font-size: 18px;
   font-weight: 600;
   color: #333;
-  margin-bottom: 16px;
+  margin-block-end: 16px;
   line-height: 1.4;
 }
 
 .course-meta {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-block-end: 20px;
   color: #666;
   font-size: 14px;
 }
@@ -211,7 +206,7 @@ export default {
 }
 
 .enter-btn {
-  width: 100%;
+  inline-size: 100%;
   padding: 10px;
   background: transparent;
   border: 1px solid var(--primary-color, #2A5CAA);
@@ -236,17 +231,17 @@ export default {
 
 .spinner {
   border: 3px solid #f3f3f3;
-  border-top: 3px solid #2A5CAA;
+  border-block-start: 3px solid #2A5CAA;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  inline-size: 40px;
+  block-size: 40px;
   animation: spin 1s linear infinite;
   margin: 0 auto 16px;
 }
 
 .empty-icon {
   font-size: 64px;
-  margin-bottom: 16px;
+  margin-block-end: 16px;
   opacity: 0.5;
 }
 

@@ -88,8 +88,6 @@ export default {
       { name: '首页', path: '/home' }, // 通用首页
       { name: '教学管理', path: '/teacher/teachinghome' }, // 教师核心功能
       { name: '资源中心', path: '/teacher/resourcehome' },
-      // 注意：你的路由里没有 /teacher/campushome，暂时先指向 home 或者你需要去添加路由
-      { name: '校园生活', path: '/home' }
     ])
 
     const isActive = (menuItem) => {

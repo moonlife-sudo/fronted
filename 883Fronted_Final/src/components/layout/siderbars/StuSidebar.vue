@@ -9,9 +9,9 @@
         <div class="group-title">
           {{ group.name }}
         </div>
-        <router-link v-for="item in group.children" :key="item.path" :to="item.path" class="menu-item"
+        <router-link v-for="item in group.children" :key="item.path" :to="resolvePath(item.path)" class="menu-item"
           :class="{ active: isItemActive(item) }">
-          <span class="item-icon">{{ item.icon }}</span>
+          <!-- <span class="item-icon">{{ item.icon }}</span> -->
           <span class="item-text">{{ item.name }}</span>
         </router-link>
       </div>
@@ -20,36 +20,53 @@
 </template>
 
 <script>
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 export default {
-  name: 'AppSidebar',
+  name: 'StuSidebar',
   setup() {
     const route = useRoute()
+    const courseId = ref('')
 
-    // 菜单配置（第二层级）- 根据PDF和接口文档重新设计
+    // 1. 监听路由，获取课程ID (这是新旧代码最大的区别)
+    watch(() => route.params.courseId, (newId) => {
+      courseId.value = newId || ''
+    }, { immediate: true })
+
+    // 判断是否在课程内
+    const inCourseContext = computed(() => !!courseId.value)
+
+    // 2. 菜单配置
     const menuConfig = {
-      teaching: [
+      // === A. 课程内菜单 (智能教学) ===
+      // path 写相对路径，后面会自动拼上 /student/course/:id/
+      courseSmart: [
         {
-          name: '教学管理',
+          name: '学习中心',
           children: [
-            //{ name: '我的课程', path: '/student/teachinghome' },
-            { name: '考勤管理', path: '/student/attendance' },
-            { name: '作业管理', path: '/student/homework' },
-            { name: '作业详情', path: '/student/homeworkdetail' },
-            { name: '成绩查询', path: '/student/grade' },
-            { name: '课程资源', path: '/student/classresource' },
-            { name: '请假管理', path: '/student/leave' },
+            { name: '考勤签到', path: 'attendance/index', icon: '📍' },
+            { name: '我的作业', path: 'homework/list', icon: '📝' },
+            { name: '成绩查询', path: 'grades/index', icon: '📊' },
+            { name: '课程资源', path: 'resources/list', icon: '📂' },
+            { name: '请假申请', path: 'leave/apply', icon: '📅' }
+          ]
+        },
+        {
+          name: '课程概况',
+          children: [
+            { name: '课程首页', path: 'overview', icon: '🏠' }
           ]
         }
       ],
+
+      // === B. 普通菜单 (资源、校园) ===
       resource: [
         {
           name: '资源管理',
           children: [
-            { name: '教室预约', path: '/student/classroom' },
-            { name: '书籍借阅', path: '/student/library' }
+            { name: '教室预约', path: '/student/classroom', icon: '🏛️' },
+            { name: '书籍借阅', path: '/student/library', icon: '📖' }
           ]
         }
       ],
@@ -57,65 +74,68 @@ export default {
         {
           name: '校园生活',
           children: [
-            { name: '宿舍分配', path: '/student/studorm' },
-            { name: '校园论坛', path: '/student/forum' }
+            { name: '宿舍分配', path: '/student/studorm', icon: '🛏️' },
+            { name: '校园论坛', path: '/student/forum', icon: '💬' }
+          ]
+        }
+      ],
+      // 添加一个默认的教学管理入口（用于非课程内）
+      teachingDefault: [
+        {
+          name: '教学管理',
+          children: [
+            { name: '我的课程', path: '/student/teachinghome', icon: '📚' },
+            { name: '请假记录', path: '/student/leave', icon: '📅' } // 全局请假记录
           ]
         }
       ]
-        
-
     }
 
-    // 计算当前模块的菜单
+    // 3. 决定显示哪组菜单
     const currentMenuGroups = computed(() => {
-      if (route.path.startsWith('/student/attendance') ||
-          route.path.startsWith('/student/homework') ||
-          route.path.startsWith('/student/homeworkdetail') ||
-          route.path.startsWith('/student/grade') ||
-          route.path.startsWith('/student/classresource') ||
-          route.path.startsWith('/student/leave')) {
-        return menuConfig.teaching
-      } 
-      else if (route.path.startsWith('/student/classroom') ||
-          route.path.startsWith('/student/library')) {
+      // 如果在课程里，显示课程专属菜单
+      if (inCourseContext.value) {
+        return menuConfig.courseSmart
+      }
+      // 如果是资源相关
+      if (route.path.includes('/resource') || route.path.includes('/library') || route.path.includes('/classroom')) {
         return menuConfig.resource
       }
-      else if (route.path.startsWith('/student/studorm') ||
-          route.path.startsWith('/student/forum')) {
+      // 如果是校园相关
+      if (route.path.includes('/campus') || route.path.includes('/dorm') || route.path.includes('/forum')) {
         return menuConfig.campus
       }
-
-      return []
+      // 默认显示教学首页
+      return menuConfig.teachingDefault
     })
 
-    // 计算当前模块标题
+    // 4. 计算标题
     const currentModuleTitle = computed(() => {
-      if (route.path.startsWith('/student/attendance') ||
-          route.path.startsWith('/student/homework') ||
-          route.path.startsWith('/student/homeworkdetail') ||
-          route.path.startsWith('/student/grade') ||
-          route.path.startsWith('/student/classresource') ||
-          route.path.startsWith('/student/leave')) {
-        return '教学管理'
-      } else if (route.path.startsWith('/student/classroom') ||
-          route.path.startsWith('/student/library')) {
-        return '资源管理'
-      }
-      else if (route.path.startsWith('/student/studorm') ||
-          route.path.startsWith('/student/forum')) {
-        return '校园生活'
-      }
-      return '功能菜单'
+      if (inCourseContext.value) return '智能学习'
+      if (route.path.includes('/resource')) return '资源管理'
+      if (route.path.includes('/campus') || route.path.includes('/dorm')) return '校园生活'
+      return '教学管理'
     })
 
-    // 检查菜单项是否激活
+    // 5. 路径解析工具 (核心！)
+    const resolvePath = (path) => {
+      // 如果不是以 / 开头，说明是课程内的相对路径，需要加上前缀
+      if (!path.startsWith('/')) {
+        return `/student/course/${courseId.value}/${path}`
+      }
+      return path
+    }
+
+    // 6. 高亮逻辑
     const isItemActive = (item) => {
-      return route.path === item.path || route.path.startsWith(item.path + '/')
+      const fullPath = resolvePath(item.path)
+      return route.path === fullPath || route.path.startsWith(fullPath + '/')
     }
 
     return {
       currentMenuGroups,
       currentModuleTitle,
+      resolvePath,
       isItemActive
     }
   }
@@ -123,6 +143,7 @@ export default {
 </script>
 
 <style scoped>
+/* === 保持你原有的样式完全不变 === */
 .app-sidebar {
   inline-size: 240px;
   background-color: var(--sidebar-bg, #d6e2f5);

@@ -3,7 +3,6 @@ D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\App.vue
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\assets
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\components
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\filelist.txt
-D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\filelist2.txt
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\main.js
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\router
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\store
