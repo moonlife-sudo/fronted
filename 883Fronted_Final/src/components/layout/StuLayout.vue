@@ -21,11 +21,11 @@ export default {
 
 <style scoped>
 .layout {
-  min-height: 100vh;
+  min-block-size: 100vh;
 }
 
 .main-content {
-  padding-top: 60px;
-  min-height: calc(100vh - 60px);
+  padding-block-start: 60px;
+  min-block-size: calc(100vh - 60px);
 }
 </style>

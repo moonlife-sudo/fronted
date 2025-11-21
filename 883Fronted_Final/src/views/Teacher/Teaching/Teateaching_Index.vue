@@ -1,46 +1,43 @@
-<!-- src/views/teaching/Index.vue -->
 <template>
   <div class="teaching-index">
     <div class="page-header">
-      <h1>我的课程</h1>
-      <p class="page-description">选择要管理的课程</p>
-    </div>
-
-    <div class="courses-grid">
-      <div
-        v-for="course in courses"
-        :key="course.class_id"
-        class="course-card"
-        @click="selectCourse(course)"
-      >
-        <div class="course-cover">
-          <img
-            v-if="course.cover_url"
-            :src="course.cover_url"
-            :alt="course.course_name"
-            class="cover-image"
-          />
-          <div v-else class="cover-placeholder">
-            <span class="placeholder-text">{{ course.course_name.charAt(0) }}</span>
-          </div>
-        </div>
-        <div class="course-info">
-          <h3 class="course-name">{{ course.course_name }}</h3>
-          <p class="course-teacher">
-            <span class="teacher-label">任课老师：</span>
-            <span class="teacher-name">{{ course.teacher_name }}</span>
-          </p>
-          <div class="course-meta">
-            <span class="meta-item">学期：{{ course.semester }}</span>
-            <span class="meta-item">选课人数：{{ course.current_enrollment }}/{{ course.max_capacity }}</span>
-          </div>
-        </div>
+      <div class="header-content">
+        <h1>我的授课</h1>
+        <p>共 {{ courses.length }} 门正在管理的课程</p>
       </div>
     </div>
 
-    <!-- 空状态 -->
-    <div v-if="!loading && courses.length === 0" class="empty-state">
-      <p>暂无课程</p>
+    <div v-if="loading" class="loading-state">
+      <div class="spinner"></div>
+      <p>正在加载课程信息...</p>
+    </div>
+
+    <div v-else-if="courses.length === 0" class="empty-state">
+      <div class="empty-icon">📚</div>
+      <p>暂无授课安排</p>
+    </div>
+
+    <div v-else class="course-grid">
+      <div v-for="course in courses" :key="course.class_id" class="course-card" @click="selectCourse(course)">
+        <div class="card-cover" :style="{ backgroundColor: getCourseColor(course.class_id) }">
+          <span class="semester-tag">{{ course.semester }}</span>
+        </div>
+
+        <div class="card-content">
+          <h3 class="course-title">{{ course.course_name }}</h3>
+          <div class="course-meta">
+            <div class="meta-item">
+              <i class="bi bi-people-fill icon"></i>
+              <span>{{ course.current_enrollment }} / {{ course.max_capacity }} 人</span>
+            </div>
+            <div class="meta-item">
+              <i class="bi bi-mortarboard-fill icon"></i>
+              <span>{{ getStatusText(course.status) }}</span>
+            </div>
+          </div>
+          <button class="enter-btn">管理课程</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -54,9 +51,19 @@ defineOptions({
 })
 
 const router = useRouter()
-
 const courses = ref([])
 const loading = ref(false)
+
+// 生成随机柔和背景色 (复用学生端逻辑)
+const getCourseColor = (id) => {
+  const colors = ['#5C6BC0', '#42A5F5', '#66BB6A', '#FFA726', '#EF5350', '#AB47BC']
+  return colors[id % colors.length]
+}
+
+const getStatusText = (status) => {
+  const map = { 1: '待开放', 2: '选课中', 3: '授课中', 4: '已结课' }
+  return map[status] || '进行中'
+}
 
 onMounted(() => {
   loadCourses()
@@ -65,122 +72,70 @@ onMounted(() => {
 const loadCourses = async () => {
   loading.value = true
   try {
+    // 这里使用真实的 API 或 模拟数据
     const response = await fetch('http://127.0.0.1:8081/teacher/classes?page=1&pageSize=100', {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      headers: { 'Content-Type': 'application/json' }
     })
 
-    if (!response.ok) {
-      throw new Error(`请求失败: ${response.status}`)
+    // 注意：如果后端没开或者报错，catch块会使用模拟数据
+    if (response.ok) {
+      const result = await response.json()
+      if (result.code === 1) {
+        courses.value = result.data.rows || []
+        loading.value = false
+        return
+      }
     }
-
-    const result = await response.json()
-
-    if (result.code === 1 && result.data) {
-      courses.value = result.data.rows || []
-    } else {
-      // 如果接口失败，使用示例数据
+    throw new Error('API Error')
+  } catch (error) {
+    // 模拟数据 (保留你之前的逻辑，但格式对齐学生端)
+    setTimeout(() => {
       courses.value = [
         {
           class_id: 501,
-          course_id: 101,
           course_name: '计算机导论',
-          teacher_id: 2001,
-          teacher_name: '张三',
           semester: '2025-Fall',
           max_capacity: 100,
           current_enrollment: 80,
-          status: 3,
-          cover_url: undefined
+          status: 3
         },
         {
           class_id: 502,
-          course_id: 102,
           course_name: '数据结构',
-          teacher_id: 2001,
-          teacher_name: '张三',
           semester: '2025-Fall',
           max_capacity: 80,
           current_enrollment: 65,
-          status: 3,
-          cover_url: undefined
+          status: 3
         },
         {
           class_id: 503,
-          course_id: 103,
           course_name: '算法设计',
-          teacher_id: 2001,
-          teacher_name: '张三',
           semester: '2025-Fall',
           max_capacity: 60,
           current_enrollment: 45,
-          status: 3,
-          cover_url: undefined
+          status: 2
         }
       ]
-    }
-  } catch (error) {
-    console.error('加载课程列表失败:', error)
-    // 使用示例数据
-    courses.value = [
-      {
-        class_id: 501,
-        course_id: 101,
-        course_name: '计算机导论',
-        teacher_id: 2001,
-        teacher_name: '张三',
-        semester: '2025-Fall',
-        max_capacity: 100,
-        current_enrollment: 80,
-        status: 3,
-        cover_url: undefined
-      },
-      {
-        class_id: 502,
-        course_id: 102,
-        course_name: '数据结构',
-        teacher_id: 2001,
-        teacher_name: '张三',
-        semester: '2025-Fall',
-        max_capacity: 80,
-        current_enrollment: 65,
-        status: 3,
-        cover_url: undefined
-      },
-      {
-        class_id: 503,
-        course_id: 103,
-        course_name: '算法设计',
-        teacher_id: 2001,
-        teacher_name: '张三',
-        semester: '2025-Fall',
-        max_capacity: 60,
-        current_enrollment: 45,
-        status: 3,
-        cover_url: undefined
-      }
-    ]
-  } finally {
-    loading.value = false
+      loading.value = false
+    }, 500)
   }
 }
 
-const selectCourse = course => {
-  // 将选中的课程ID存储到sessionStorage，供其他页面使用
-  sessionStorage.setItem('selectedClassId', course.class_id.toString())
-  sessionStorage.setItem('selectedCourseName', course.course_name)
-  
-  // 跳转到考勤管理页面（默认）
-  router.push('/teacher/attendance')
+const selectCourse = (course) => {
+  // 1. 存数据 (为了新页面能读取到课程名)
+  sessionStorage.setItem('selectedClassId', course.class_id);
+  sessionStorage.setItem('selectedCourseName', course.course_name);
+
+  // 2. 跳转到新路由 (注意这里拼写了 /course/...)
+  router.push(`/teacher/course/${course.class_id}/overview`);
 }
 </script>
 
 <style scoped>
 .teaching-index {
   padding: 24px;
-  max-width: 1400px;
+  max-inline-size: 1400px;
   margin: 0 auto;
 }
 
@@ -190,18 +145,15 @@ const selectCourse = course => {
 
 .page-header h1 {
   font-size: 28px;
-  font-weight: 600;
   color: #333;
-  margin: 0 0 8px 0;
+  margin-block-end: 8px;
 }
 
-.page-description {
+.page-header p {
   color: #666;
-  font-size: 14px;
-  margin: 0;
 }
 
-.courses-grid {
+.course-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 24px;
@@ -211,104 +163,121 @@ const selectCourse = course => {
   background: #fff;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   cursor: pointer;
-  transition: all 0.3s;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid #eee;
   display: flex;
   flex-direction: column;
 }
 
 .course-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
-.course-cover {
-  width: 100%;
-  height: 180px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+/* 1. 顶部彩色封面区 */
+.card-cover {
+  block-size: 120px;
+  padding: 16px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+  align-items: flex-start;
+  justify-content: flex-end;
 }
 
-.cover-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.semester-tag {
+  background: rgba(0, 0, 0, 0.2);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  backdrop-filter: blur(4px);
 }
 
-.cover-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.placeholder-text {
-  font-size: 64px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.course-info {
+/* 2. 内容区 */
+.card-content {
   padding: 20px;
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-.course-name {
-  font-size: 20px;
+.course-title {
+  font-size: 18px;
   font-weight: 600;
   color: #333;
-  margin: 0 0 12px 0;
-}
-
-.course-teacher {
-  margin: 0 0 12px 0;
-  font-size: 14px;
-  color: #666;
-}
-
-.teacher-label {
-  color: #999;
-}
-
-.teacher-name {
-  color: #2A5CAA;
-  font-weight: 500;
+  margin-block-end: 16px;
+  line-height: 1.4;
 }
 
 .course-meta {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-block-start: auto;
-  padding-block-start: 12px;
-  border-block-start: 1px solid #e8e8e8;
-  font-size: 12px;
-  color: #999;
+  justify-content: space-between;
+  margin-block-end: 20px;
+  color: #666;
+  font-size: 14px;
 }
 
 .meta-item {
   display: flex;
   align-items: center;
+  gap: 6px;
 }
 
-.empty-state {
-  padding: 80px 20px;
-  text-align: center;
-  color: #999;
+.icon {
   font-size: 16px;
+  color: #999;
 }
 
-@media (max-width: 768px) {
-  .courses-grid {
-    grid-template-columns: 1fr;
+.enter-btn {
+  inline-size: 100%;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid #2A5CAA;
+  color: #2A5CAA;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s;
+  margin-block-start: auto;
+  /* 让按钮始终在底部 */
+}
+
+.course-card:hover .enter-btn {
+  background: #2A5CAA;
+  color: #fff;
+}
+
+/* Loading & Empty */
+.loading-state,
+.empty-state {
+  text-align: center;
+  padding: 60px 0;
+  color: #999;
+}
+
+.spinner {
+  border: 3px solid #f3f3f3;
+  border-block-start: 3px solid #2A5CAA;
+  border-radius: 50%;
+  inline-size: 40px;
+  block-size: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+.empty-icon {
+  font-size: 64px;
+  margin-block-end: 16px;
+  opacity: 0.5;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
   }
 }
 </style>

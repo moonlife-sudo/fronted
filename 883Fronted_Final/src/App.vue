@@ -1,17 +1,16 @@
-<!-- src/App.vue -->
 <template>
   <div id="app">
-    <!-- 根据路由动态显示对应角色的Header -->
-    <AdminHeader v-if="currentRole === 'admin'" />
-    <TeaHeader v-else-if="currentRole === 'teacher'" />
-    <StuHeader v-else />
-    
-    <!-- 根据路由动态显示对应角色的Sidebar -->
-    <AdminSidebar v-if="showSidebar && currentRole === 'admin'" />
-    <TeaSidebar v-else-if="showSidebar && currentRole === 'teacher'" />
-    <StuSidebar v-else-if="showSidebar" />
-    
-    <main class="main-content" :class="{ 'with-sidebar': showSidebar }">
+    <template v-if="showLayout">
+      <AdminHeader v-if="currentRole === 'admin'" />
+      <TeaHeader v-else-if="currentRole === 'teacher'" />
+      <StuHeader v-else />
+
+      <AdminSidebar v-if="showSidebar && currentRole === 'admin'" />
+      <TeaSidebar v-else-if="showSidebar && currentRole === 'teacher'" />
+      <StuSidebar v-else-if="showSidebar" />
+    </template>
+
+    <main class="main-content" :class="{ 'with-sidebar': showSidebar && showLayout, 'no-layout': !showLayout }">
       <router-view />
     </main>
   </div>
@@ -21,11 +20,10 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 
-// 导入各个角色的Header和Sidebar组件
+// 导入组件... (保持不变)
 import AdminHeader from './components/layout/headers/AdminHeader.vue'
 import TeaHeader from './components/layout/headers/TeaHeader.vue'
 import StuHeader from './components/layout/headers/StuHeader.vue'
-
 import AdminSidebar from './components/layout/siderbars/AdminSidebar.vue'
 import TeaSidebar from './components/layout/siderbars/TeaSidebar.vue'
 import StuSidebar from './components/layout/siderbars/StuSidebar.vue'
@@ -33,71 +31,59 @@ import StuSidebar from './components/layout/siderbars/StuSidebar.vue'
 export default {
   name: 'App',
   components: {
-    AdminHeader,
-    TeaHeader,
-    StuHeader,
-    AdminSidebar,
-    TeaSidebar,
-    StuSidebar
+    AdminHeader, TeaHeader, StuHeader,
+    AdminSidebar, TeaSidebar, StuSidebar
   },
   setup() {
     const route = useRoute()
-    
-    // 根据当前路由路径自动判断角色
+
+    // 💡 1. 判断是否需要显示布局 (Header/Sidebar)
+    // 如果当前路由是 /login 或 /register，则不显示
+    const showLayout = computed(() => {
+      const noLayoutRoutes = ['/login', '/register']
+      return !noLayoutRoutes.includes(route.path)
+    })
+
+    // 2. 判断当前角色 (保持不变)
     const currentRole = computed(() => {
       const path = route.path
-      
-      if (path.startsWith('/admin')) {
-        return 'admin'
-      } else if (path.startsWith('/teacher')) {
-        return 'teacher'
-      } else {
-        return 'student'
-      }
+      if (path.startsWith('/admin')) return 'admin'
+      if (path.startsWith('/teacher')) return 'teacher'
+      return 'student'
     })
-    
-    // 根据路由判断是否显示侧边栏
+
+    // 3. 判断是否显示侧边栏 (保持不变，但依赖 showLayout)
     const showSidebar = computed(() => {
+      // 如果不显示布局，肯定不显示侧边栏
+      if (!showLayout.value) return false
+
+      // 原有的侧边栏判断逻辑
       const sidebarRoutes = [
-        // 学生路由
-        '/student/attendance',
-        '/student/grade',
-        '/student/classresource',
-        '/student/homework',
-        '/student/homeworkdetail',
-        '/student/leave',
-        '/student/library',
-        '/student/classroom',
-        '/student/studorm',
+        // ... (你的长列表保持不变) ...
+        '/student/attendance', '/student/grade', '/student/classresource',
+        '/student/homework', '/student/homeworkdetail', '/student/leave',
+        '/student/library', '/student/classroom', '/student/studorm',
         '/student/forum',
-        // 教师路由  
-        '/teacher/students',
-        '/teacher/resources', 
-        '/teacher/attendance',
-        '/teacher/grades',
-        '/teacher/homework',
-        '/teacher/leave',
-        '/teacher/library',
-        '/teacher/classroom',
-        // 管理员路由
-        '/admin/dorm',
-        '/admin/dormassign',
-        '/admin/approve',
-        '/admin/classroom',
-        '/admin/library'
+        '/teacher/students', '/teacher/resources', '/teacher/attendance',
+        '/teacher/grades', '/teacher/homework', '/teacher/leave',
+        '/teacher/library', '/teacher/classroom',
+        '/admin/dorm', '/admin/dormassign', '/admin/approve',
+        '/admin/classroom', '/admin/library'
       ]
       return sidebarRoutes.some(path => route.path.startsWith(path))
     })
-    
+
     return {
       currentRole,
-      showSidebar
+      showSidebar,
+      showLayout // 导出这个新变量
     }
   }
 }
 </script>
 
 <style>
+/* 全局样式保持不变 */
 * {
   margin: 0;
   padding: 0;
@@ -105,37 +91,55 @@ export default {
 }
 
 #app {
-  min-height: 100vh;
+  min-block-size: 100vh;
   position: relative;
   background: transparent;
 }
 
 .main-content {
-  margin-top: -20px;
+  /* 默认有 Header 时的样式 */
+  margin-block-start: -20px;
+  /* 这里的 margin-top 可能是为了抵消 header 高度，或者根据你的布局调整 */
   padding: 20px;
   background: #f5f5f5;
-  min-height: calc(100vh - 60px);
+  min-block-size: calc(100vh - 60px);
   transition: margin-left 0.3s ease;
-  background-clip: content-box;
-  background-origin: content-box;
+}
+
+/* 💡 新增：没有布局时（登录页）的样式 */
+.main-content.no-layout {
+  margin-block-start: 0;
+  margin-inline-start: 0 !important;
+  padding: 0;
+  background: transparent;
+  /* 登录页可能有自己的背景 */
+  min-block-size: 100vh;
 }
 
 .main-content.with-sidebar {
-  margin-left: 240px;
+  margin-inline-start: 240px;
 }
 
+/* 背景遮罩层逻辑也需要调整 */
 .main-content::before {
   content: '';
   position: absolute;
-  top: 50px; 
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset-block-start: 50px;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  inset-block-end: 0;
   background: #f5f5f5;
   z-index: -1;
+  display: block;
+  /* 默认显示 */
+}
+
+/* 💡 登录页隐藏背景遮罩 */
+.main-content.no-layout::before {
+  display: none;
 }
 
 .main-content.with-sidebar::before {
-  left: 240px;
+  inset-inline-start: 240px;
 }
 </style>

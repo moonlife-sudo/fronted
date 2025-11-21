@@ -1,6 +1,6 @@
 <!-- components/layout/AppHeader.vue -->
 <template>
-<header class="app-header">
+  <header class="app-header">
     <div class="top-level-nav">
       <div class="nav-left">
         <router-link to="/" class="nav-logo">
@@ -16,15 +16,19 @@
       <div class="nav-right">
         <div class="search-box">
           <input type="text" placeholder="搜索..." class="search-input">
-          <button class="search-btn"></button>
+          <button class="search-btn">
+            <img src="@/assets/images/search-icon.png" alt="搜索" class="icon-img">
+          </button>
         </div>
         <div class="message-icon">
           <button class="icon-btn"></button>
         </div>
+        
         <!-- 用户头像移到最右侧 -->
         <div class="user-avatar-container" @click="goToProfile">
           <div class="user-avatar">
-            <img src="https://placeholder.pics/svg/150x150/DEDEDE/555555/用户头像" alt="用户头像" class="avatar-img" v-if="hasAvatar">
+            <img src="https://placeholder.pics/svg/150x150/DEDEDE/555555/用户头像" alt="用户头像" class="avatar-img"
+              v-if="hasAvatar">
             <div class="avatar-placeholder" v-else></div>
           </div>
         </div>
@@ -50,7 +54,7 @@ export default {
       { name: '资源管理', path: '/admin/resourcehome' },
       { name: '校园生活', path: '/admin/campushome' }
     ])
-
+    
     // 用户头像状态
     const hasAvatar = ref(true)
 

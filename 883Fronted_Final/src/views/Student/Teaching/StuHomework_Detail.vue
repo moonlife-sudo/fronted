@@ -220,12 +220,12 @@ export default {
 <style scoped>
 .homework-detail-page {
   padding: 20px;
-  max-width: 800px;
+  max-inline-size: 800px;
   margin: 0 auto;
 }
 
 .header {
-  margin-bottom: 20px;
+  margin-block-end: 20px;
 }
 
 .back-btn {
@@ -241,7 +241,7 @@ export default {
   padding: 24px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  margin-bottom: 20px;
+  margin-block-end: 20px;
 }
 
 .hw-title {
@@ -256,9 +256,9 @@ export default {
   display: flex;
   gap: 10px;
   align-items: center;
-  margin-bottom: 15px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 15px;
+  margin-block-end: 15px;
+  border-block-end: 1px solid #eee;
+  padding-block-end: 15px;
 }
 
 .tag-overdue {
@@ -275,16 +275,16 @@ export default {
 }
 
 .submission-info h3 {
-  margin-top: 0;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
+  margin-block-start: 0;
+  border-block-end: 1px solid #eee;
+  padding-block-end: 10px;
 }
 
 .info-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
-  margin-bottom: 15px;
+  margin-block-end: 15px;
 }
 
 .info-item {
@@ -307,21 +307,21 @@ export default {
   background: #f9f9f9;
   padding: 15px;
   border-radius: 4px;
-  margin-top: 15px;
+  margin-block-start: 15px;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-block-end: 20px;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 8px;
+  margin-block-end: 8px;
   font-weight: 500;
 }
 
 textarea {
-  width: 100%;
+  inline-size: 100%;
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -347,19 +347,19 @@ textarea {
   background: #f0f5ff;
   padding: 4px 8px;
   border-radius: 4px;
-  margin-right: 8px;
+  margin-inline-end: 8px;
   font-size: 12px;
   color: #1890ff;
 }
 
 .remove {
   cursor: pointer;
-  margin-left: 4px;
+  margin-inline-start: 4px;
   color: #999;
 }
 
 .file-item {
-  margin-top: 5px;
+  margin-block-start: 5px;
 }
 
 .loading {
@@ -369,10 +369,10 @@ textarea {
 }
 
 .upload-box {
-  margin-bottom: 10px;
+  margin-block-end: 10px;
 }
 
 .uploaded-files {
-  margin-top: 10px;
+  margin-block-start: 10px;
 }
 </style>

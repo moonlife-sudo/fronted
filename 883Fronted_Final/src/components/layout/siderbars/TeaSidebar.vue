@@ -1,4 +1,3 @@
-<!-- components/layout/AppSidebar.vue -->
 <template>
   <aside class="app-sidebar">
     <div class="sidebar-header">
@@ -10,7 +9,7 @@
         <div class="group-title">
           {{ group.name }}
         </div>
-        <router-link v-for="item in group.children" :key="item.path" :to="item.path" class="menu-item"
+        <router-link v-for="item in group.items" :key="item.path" :to="resolvePath(item.path)" class="menu-item"
           :class="{ active: isItemActive(item) }">
           <span class="item-icon">{{ item.icon }}</span>
           <span class="item-text">{{ item.name }}</span>
@@ -21,81 +20,105 @@
 </template>
 
 <script>
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 export default {
-  name: 'AppSidebar',
+  name: 'TeaSidebar',
   setup() {
     const route = useRoute()
+    const router = useRouter()
+    const courseId = ref('')
 
-    // 菜单配置（第二层级）- 根据PDF和接口文档重新设计
+    watch(() => route.params.courseId, (newId) => {
+      courseId.value = newId || ''
+    }, { immediate: true })
+
+    const inCourseContext = computed(() => !!courseId.value)
+
+    // === 菜单配置：左侧只放“大模块” ===
     const menuConfig = {
-      teaching: [
+      // 1. 课程内菜单
+      courseSmart: [
         {
           name: '教学管理',
-          children: [
-            { name: '学生管理', path: '/teacher/students'},
-            { name: '课程资源', path: '/teacher/resources' },
-            { name: '考勤管理', path: '/teacher/attendance'},
-            { name: '成绩管理', path: '/teacher/grades'},
-            { name: '作业管理', path: '/teacher/homework' },
-            { name: '请假管理', path: '/teacher/leave' },
+          items: [
+            // 点击这些，去往各自的默认页面（顶栏会显示子菜单）
+            { name: '考勤管理', path: 'attendance/launch', icon: ' ' },
+            { name: '作业管理', path: 'homework/publish', icon: ' ' },
+            { name: '成绩管理', path: 'grades/detail', icon: ' ' },
+            { name: '课程资源', path: 'resources/list', icon: ' ' },
+            { name: '学生管理', path: 'students/detail', icon: ' ' },
+            { name: '请假审批', path: 'leave/approval', icon: ' ' } // 假设你有这个
           ]
-        }
-      ],
-      resource: [
+        },
         {
-          name: '资源管理',
-          children: [
-            { name: '教室预约', path: '/teacher/classroom'},
-            { name: '书籍借阅', path: '/teacher/library' }
+          name: '课程概况',
+          items: [
+            { name: '课程首页', path: 'overview', icon: ' ' },
+            { name: '知识图谱', path: 'learning-path', icon: ' ' },
           ]
         }
       ],
+      // 2. 课程外菜单 (非课程详情页)
+      default: [
+        {
+          name: '工作台',
+          items: [
+            { name: '我的课程', path: '/teacher/teachinghome', icon: ' ' },
+            { name: '请假中心', path: '/teacher/leave', icon: ' ' },
+          ]
+        },
+        {
+          name: '公共资源',
+          items: [
+            { name: '教室预约', path: '/teacher/classroom', icon: ' ' },
+            { name: '图书馆', path: '/teacher/library', icon: ' ' }
+          ]
+        }
+      ]
     }
 
-    // 计算当前模块的菜单
     const currentMenuGroups = computed(() => {
-      if (route.path.startsWith('/teacher/students') || 
-          route.path.startsWith('/teacher/resources') ||
-          route.path.startsWith('/teacher/attendance') ||
-          route.path.startsWith('/teacher/grades') ||
-          route.path.startsWith('/teacher/homework') ||
-          route.path.startsWith('/teacher/leave')) {
-        return menuConfig.teaching
-      } else if (route.path.startsWith('/teacher/classroom')) {
-        return menuConfig.resource
-      } else if (route.path.startsWith('/teacher/library')) {
-        return menuConfig.resource
-      } 
-      return []
+      if (inCourseContext.value) return menuConfig.courseSmart
+      return menuConfig.default
     })
 
-    // 计算当前模块标题
     const currentModuleTitle = computed(() => {
-      if (route.path.startsWith('/teacher/students') || 
-          route.path.startsWith('/teacher/resources') ||
-          route.path.startsWith('/teacher/attendance') ||
-          route.path.startsWith('/teacher/grades') ||
-          route.path.startsWith('/teacher/homework') ||
-          route.path.startsWith('/teacher/leave')) {
-        return '教学管理'
-      } else if (route.path.startsWith('/teacher/classroom') ||
-          route.path.startsWith('/teacher/library')) {
-        return '资源管理'
-      }
-      return '功能菜单'
+      if (inCourseContext.value) return '智能教学系统'
+      return '教师中心'
     })
 
-    // 检查菜单项是否激活
+    const resolvePath = (path) => {
+      if (!path.startsWith('/')) {
+        return `/teacher/course/${courseId.value}/${path}`
+      }
+      return path
+    }
+
+    // 高亮逻辑：只要当前路由包含这个模块的关键词，侧边栏就高亮
     const isItemActive = (item) => {
-      return route.path === item.path || route.path.startsWith(item.path + '/')
+      const fullPath = resolvePath(item.path)
+      const currentPath = route.path
+
+      // 提取模块名 (例如 attendance) 进行模糊匹配
+      // item.path 格式如 "attendance/launch" -> 取 "attendance"
+      if (inCourseContext.value && !item.path.startsWith('/')) {
+        const moduleKey = item.path.split('/')[0]
+        // 如果当前路径里包含这个模块名 (e.g. /teacher/course/101/attendance/detail)
+        if (currentPath.includes(`/${moduleKey}`)) {
+          return true
+        }
+      }
+
+      // 精确匹配 (用于首页等)
+      return currentPath === fullPath || currentPath.startsWith(fullPath + '/')
     }
 
     return {
       currentMenuGroups,
       currentModuleTitle,
+      resolvePath,
       isItemActive
     }
   }
@@ -103,24 +126,26 @@ export default {
 </script>
 
 <style scoped>
+/* === 完全复用 StuSidebar.vue 的样式 === */
 .app-sidebar {
-  width: 240px;
+  inline-size: 240px;
   background-color: var(--sidebar-bg, #d6e2f5);
-  height: calc(100vh - 60px);
+  /* 学生端的淡蓝色背景 */
+  block-size: calc(100vh - 60px);
   position: fixed;
-  top: 60px;
-  left: 0;
+  inset-block-start: 60px;
+  inset-inline-start: 0;
   box-shadow: var(--sidebar-shadow, 2px 0 8px rgba(0, 0, 0, 0.1));
   z-index: 999;
   overflow-y: auto;
 }
 
 .sidebar-header {
-  height: 50px;
+  block-size: 50px;
   display: flex;
   align-items: center;
   padding: 0 15px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-block-end: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .sidebar-title {
@@ -134,7 +159,7 @@ export default {
 }
 
 .menu-group {
-  margin-bottom: 20px;
+  margin-block-end: 20px;
 }
 
 .group-title {
@@ -153,7 +178,8 @@ export default {
   text-decoration: none;
   color: var(--text-gray, #333333);
   transition: all 0.3s;
-  border-left: 3px solid transparent;
+  border-inline-start: 3px solid transparent;
+  /* 左侧高亮条 */
   gap: 10px;
   margin: 2px 0;
 }
@@ -165,13 +191,15 @@ export default {
 
 .menu-item.active {
   background-color: var(--sidebar-active, #c2d4f0);
+  /* 激活时的背景色 */
   color: var(--primary-color, #2A5CAA);
-  border-left-color: var(--primary-color, #2A5CAA);
+  border-inline-start-color: var(--primary-color, #2A5CAA);
+  /* 激活时的左侧蓝条 */
 }
 
 .item-icon {
   font-size: 16px;
-  min-width: 20px;
+  min-inline-size: 20px;
   text-align: center;
 }
 

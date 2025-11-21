@@ -124,23 +124,23 @@ export default {
 
 <style scoped>
 .app-sidebar {
-  width: 240px;
+  inline-size: 240px;
   background-color: var(--sidebar-bg, #d6e2f5);
-  height: calc(100vh - 60px);
+  block-size: calc(100vh - 60px);
   position: fixed;
-  top: 60px;
-  left: 0;
+  inset-block-start: 60px;
+  inset-inline-start: 0;
   box-shadow: var(--sidebar-shadow, 2px 0 8px rgba(0, 0, 0, 0.1));
   z-index: 999;
   overflow-y: auto;
 }
 
 .sidebar-header {
-  height: 50px;
+  block-size: 50px;
   display: flex;
   align-items: center;
   padding: 0 15px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-block-end: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .sidebar-title {
@@ -154,7 +154,7 @@ export default {
 }
 
 .menu-group {
-  margin-bottom: 20px;
+  margin-block-end: 20px;
 }
 
 .group-title {
@@ -173,7 +173,7 @@ export default {
   text-decoration: none;
   color: var(--text-gray, #333333);
   transition: all 0.3s;
-  border-left: 3px solid transparent;
+  border-inline-start: 3px solid transparent;
   gap: 10px;
   margin: 2px 0;
 }
@@ -186,12 +186,12 @@ export default {
 .menu-item.active {
   background-color: var(--sidebar-active, #c2d4f0);
   color: var(--primary-color, #2A5CAA);
-  border-left-color: var(--primary-color, #2A5CAA);
+  border-inline-start-color: var(--primary-color, #2A5CAA);
 }
 
 .item-icon {
   font-size: 16px;
-  min-width: 20px;
+  min-inline-size: 20px;
   text-align: center;
 }
 
