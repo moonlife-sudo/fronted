@@ -65,10 +65,12 @@ export default {
     })
 
     const resolveTabPath = (subPath) => {
+      // 1. 如果在课程内，拼课程路径
       if (courseId.value) {
         return `/student/course/${courseId.value}/${subPath}`
       }
-      return subPath
+      // 2. 【修复】如果在全局，强制拼上 /student/ 前缀，变成绝对路径
+      return `/student/${subPath}`
     }
 
     return {

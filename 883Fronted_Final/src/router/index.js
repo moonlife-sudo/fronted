@@ -42,6 +42,26 @@ const routes = [
           import("../views/Student/Teaching/StuTeaching_Index.vue"),
         meta: { showSidebar: true },
       },
+      // 全局请假记录 (修复点击侧边栏“请假记录”不显示的问题)
+      {
+        path: "leave",
+        // 1. 如果访问 /student/leave，自动跳到记录页
+        redirect: "/student/leave/records",
+      },
+      {
+        path: "leave/records",
+        name: "StudentGlobalLeaveRecords",
+        component: () =>
+          import("../views/Student/Teaching/course/leave/Records.vue"),
+        meta: { showSidebar: true, title: "请假记录" },
+      },
+      {
+        path: "leave/apply",
+        name: "StudentGlobalLeaveApply",
+        component: () =>
+          import("../views/Student/Teaching/course/leave/Apply.vue"),
+        meta: { showSidebar: true, title: "我要请假" },
+      },
 
       // ============================================================
       // 2.2 【核心】学生课程专属智能教学路由 (扁平化写法，不要改动)
