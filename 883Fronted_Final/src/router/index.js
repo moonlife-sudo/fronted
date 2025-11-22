@@ -8,7 +8,7 @@ const routes = [
   // 1. 基础路由
   {
     path: "/",
-    redirect: "/home",
+    redirect: "/login",
   },
   {
     path: "/login",
@@ -16,18 +16,18 @@ const routes = [
     component: () => import("../views/Login.vue"),
     meta: { showLayout: false },
   },
-  {
-    path: "/home",
-    name: "Home",
-    component: () => import("../views/Home.vue"),
-    meta: { showSidebar: false },
-  },
 
   // 2. 学生路由
   {
     path: "/student",
     component: StudentLayout,
     children: [
+      {
+        path: "home", // 访问路径变成 /student/home
+        name: "StudentHome",
+        component: () => import("../views/Home.vue"), // 复用同一个 Home 组件
+        meta: { showSidebar: false }, // 首页通常不显示侧边栏
+      },
       {
         path: "profile",
         name: "StudentProfile",
@@ -160,25 +160,25 @@ const routes = [
         path: "campushome",
         name: "StudentCampusHome",
         component: () => import("../views/Student/Campus/StuCampusHome.vue"),
-        meta: { showSidebar: false },
+        meta: { showSidebar: false }, // 首页通常不显示侧边栏，保持 false 即可
       },
       {
         path: "studorm",
         name: "StudentDormAssign",
         component: () => import("../views/Student/Campus/StuDormAssign.vue"),
-        meta: { showSidebar: false },
+        meta: { showSidebar: true }, // ❌ 之前是 false，👉 改为 true
       },
       {
         path: "forum",
         name: "StudentForum",
         component: () => import("../views/Student/Campus/StuForum.vue"),
-        meta: { showSidebar: false },
+        meta: { showSidebar: true }, // ❌ 之前是 false，👉 改为 true
       },
       {
         path: "postdetail",
         name: "StudentPostDetail",
         component: () => import("../views/Student/Campus/StuPostDetail.vue"),
-        meta: { showSidebar: false },
+        meta: { showSidebar: true }, // ❌ 建议也改为 true
       },
     ],
   },
@@ -188,6 +188,12 @@ const routes = [
     path: "/teacher",
     component: TeacherLayout,
     children: [
+      {
+        path: "home", // 访问路径变成 /teacher/home
+        name: "TeacherHome",
+        component: () => import("../views/Home.vue"),
+        meta: { showSidebar: false },
+      },
       {
         path: "profile",
         component: () => import("../views/Teacher/TeacherProfile.vue"),
@@ -328,6 +334,12 @@ const routes = [
     path: "/admin",
     component: AdminLayout,
     children: [
+      {
+        path: "home", // 访问路径变成 /admin/home
+        name: "AdminHome",
+        component: () => import("../views/Home.vue"),
+        meta: { showSidebar: false },
+      },
       {
         path: "campushome",
         name: "AdminCampusHome",

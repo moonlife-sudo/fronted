@@ -56,13 +56,13 @@
 <script>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from 'vuex'
+// import { useStore } from 'vuex' // 暂时注释掉，如果你没配 Vuex 就不需要它
 
 export default {
     name: 'Login',
     setup() {
         const router = useRouter()
-        const store = useStore()
+        // const store = useStore()
         const loading = ref(false)
 
         // 登录表单数据
@@ -94,7 +94,7 @@ export default {
                 if (loginForm.username === 'admin') {
                     role = 'admin'
                     name = '管理员'
-                } else if (loginForm.username.startsWith('T') || loginForm.username.startsWith('t')) {
+                } else if (loginForm.username.toLowerCase().startsWith('t')) {
                     role = 'teacher'
                     name = '老师'
                 }
@@ -109,15 +109,17 @@ export default {
                 // 2. 保存状态 (关键：这会让路由守卫放行)
                 localStorage.setItem('token', userData.token)
                 localStorage.setItem('userInfo', JSON.stringify(userData))
-                store.commit('SET_USER', userData)
+
+                // 如果你有 Vuex，可以取消注释下面这行
+                // store.commit('SET_USER', userData)
 
                 // 3. 根据角色跳转到不同首页
                 if (role === 'admin') {
-                    router.push('/admin/campushome')
+                    router.push('/admin/home') // 注意路径要对齐你的 router/index.js
                 } else if (role === 'teacher') {
-                    router.push('/teacher/teachinghome')
+                    router.push('/teacher/home')
                 } else {
-                    router.push('/student/teachinghome') // 学生默认去教学首页
+                    router.push('/student/home')
                 }
 
             } catch (error) {
@@ -143,17 +145,12 @@ export default {
 </script>
 
 <style scoped>
-/* 这里直接合并了你提供的 login.css 
-  并做了一些微调以适应 Vue 组件 
-*/
-
 .login-container {
     min-block-size: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     background: #f0f2f5;
-    /* 稍微改了一下背景色 */
 }
 
 .login-content {
@@ -184,7 +181,6 @@ export default {
     inline-size: 100%;
     block-size: 100%;
     object-fit: cover;
-    /* 确保图片铺满且不变形 */
     display: block;
 }
 
@@ -242,13 +238,12 @@ export default {
     transition: all 0.3s ease;
     background: #fafafa;
     box-sizing: border-box;
-    /* 关键：防止padding撑大 */
 }
 
 .form-input:focus {
     outline: none;
-    border-color: #3498db;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    border-color: #2A5CAA;
+    box-shadow: 0 0 0 3px rgba(42, 92, 170, 0.1);
     background: #fff;
 }
 
@@ -272,20 +267,20 @@ export default {
 }
 
 .forgot-password {
-    color: #3498db;
+    color: #2A5CAA;
     text-decoration: none;
     transition: color 0.2s;
 }
 
 .forgot-password:hover {
-    color: #2980b9;
+    color: #1e4b8b;
     text-decoration: underline;
 }
 
 .login-btn {
     inline-size: 100%;
     padding: 12px;
-    background: #2a5caa;
+    background: #2A5CAA;
     color: white;
     border: none;
     border-radius: 8px;
@@ -305,7 +300,6 @@ export default {
 .login-btn:disabled {
     background: #a0aec0;
     cursor: not-allowed;
-    transform: none;
 }
 
 /* 账号说明区域 */

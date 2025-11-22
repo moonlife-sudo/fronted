@@ -463,11 +463,11 @@ export default {
   color: var(--dark-color);
   background-color: var(--light-color);
   line-height: 1.6;
-  min-height: 100vh;
+  min-block-size: 100vh;
 }
 
 .container {
-  max-width: 1000px;
+  max-inline-size: 1000px;
   margin: 0 auto;
   padding: 80px 1rem 2rem;
 }
@@ -478,12 +478,12 @@ export default {
   border-radius: var(--border-radius);
   padding: 1.5rem;
   box-shadow: var(--box-shadow);
-  margin-bottom: 2rem;
+  margin-block-end: 2rem;
 }
 
 .view-section h1, .view-section h2 {
   color: var(--primary-color);
-  margin-bottom: 1.5rem;
+  margin-block-end: 1.5rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -510,30 +510,30 @@ export default {
 
 /* 表单样式 */
 .form-section {
-  margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--gray-color);
+  margin-block-end: 2rem;
+  padding-block-end: 1.5rem;
+  border-block-end: 1px solid var(--gray-color);
 }
 
 .form-section:last-of-type {
-  border-bottom: none;
+  border-block-end: none;
 }
 
 .form-section h3 {
   color: var(--primary-color);
-  margin-bottom: 1rem;
+  margin-block-end: 1rem;
   font-size: 1.1rem;
-  padding-left: 0.5rem;
-  border-left: 3px solid var(--primary-color);
+  padding-inline-start: 0.5rem;
+  border-inline-start: 3px solid var(--primary-color);
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-block-end: 1.5rem;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 0.8rem;
+  margin-block-end: 0.8rem;
   font-weight: 500;
   color: var(--dark-color);
 }
@@ -550,7 +550,7 @@ export default {
   gap: 0.8rem;
   font-weight: normal;
   cursor: pointer;
-  margin-bottom: 0;
+  margin-block-end: 0;
   padding: 0.5rem;
   border-radius: 4px;
   transition: var(--transition);
@@ -565,7 +565,7 @@ export default {
 }
 
 .form-group textarea {
-  width: 100%;
+  inline-size: 100%;
   padding: 0.8rem 1rem;
   border: 1px solid var(--gray-color);
   border-radius: var(--border-radius);
@@ -581,7 +581,7 @@ export default {
 }
 
 .btn-submit {
-  width: 100%;
+  inline-size: 100%;
   padding: 1rem;
   background-color: var(--secondary-color);
   color: white;
@@ -595,7 +595,7 @@ export default {
   justify-content: center;
   gap: 0.5rem;
   transition: var(--transition);
-  margin-top: 1rem;
+  margin-block-start: 1rem;
 }
 
 .btn-submit:hover:not(:disabled) {
@@ -626,13 +626,13 @@ export default {
 .result-pending i {
   font-size: 3rem;
   color: var(--primary-color);
-  margin-bottom: 1rem;
+  margin-block-end: 1rem;
 }
 
 .small-text {
   font-size: 0.9rem;
   color: #999;
-  margin-top: 0.5rem;
+  margin-block-start: 0.5rem;
 }
 
 .result-detail {
@@ -643,18 +643,18 @@ export default {
   display: flex;
   justify-content: space-between;
   padding: 1rem 0;
-  border-bottom: 1px solid var(--gray-color);
+  border-block-end: 1px solid var(--gray-color);
   align-items: center;
 }
 
 .result-item:last-child {
-  border-bottom: none;
+  border-block-end: none;
 }
 
 .btn-contact {
-  width: 100%;
+  inline-size: 100%;
   padding: 1rem;
-  margin-top: 1.5rem;
+  margin-block-start: 1.5rem;
   background-color: var(--primary-color);
   color: white;
   border: none;

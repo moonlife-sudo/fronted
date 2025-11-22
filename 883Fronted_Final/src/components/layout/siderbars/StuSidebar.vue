@@ -27,20 +27,18 @@ export default {
   name: 'StuSidebar',
   setup() {
     const route = useRoute()
+    const router = useRouter()
     const courseId = ref('')
 
-    // 1. 监听路由，获取课程ID (这是新旧代码最大的区别)
     watch(() => route.params.courseId, (newId) => {
       courseId.value = newId || ''
     }, { immediate: true })
 
-    // 判断是否在课程内
     const inCourseContext = computed(() => !!courseId.value)
 
-    // 2. 菜单配置
+    // 菜单配置
     const menuConfig = {
-      // === A. 课程内菜单 (智能教学) ===
-      // path 写相对路径，后面会自动拼上 /student/course/:id/
+      // 1. 课程内
       courseSmart: [
         {
           name: '学习中心',
@@ -59,17 +57,7 @@ export default {
           ]
         }
       ],
-
-      // === B. 普通菜单 (资源、校园) ===
-      resource: [
-        {
-          name: '资源管理',
-          children: [
-            { name: '教室预约', path: '/student/classroom', icon: '🏛️' },
-            { name: '书籍借阅', path: '/student/library', icon: '📖' }
-          ]
-        }
-      ],
+      // 2. 校园生活 (修复点：确保这里的配置正确)
       campus: [
         {
           name: '校园生活',
@@ -79,57 +67,72 @@ export default {
           ]
         }
       ],
-      // 添加一个默认的教学管理入口（用于非课程内）
+      // 3. 资源管理
+      resource: [
+        {
+          name: '资源管理',
+          children: [
+            { name: '教室预约', path: '/student/classroom', icon: '🏛️' },
+            { name: '书籍借阅', path: '/student/library', icon: '📖' }
+          ]
+        }
+      ],
+      // 4. 默认（教学）
       teachingDefault: [
         {
           name: '教学管理',
           children: [
             { name: '我的课程', path: '/student/teachinghome', icon: '📚' },
-            { name: '请假记录', path: '/student/leave', icon: '📅' } // 全局请假记录
+            { name: '请假记录', path: '/student/leave', icon: '📅' }
           ]
         }
       ]
     }
 
-    // 3. 决定显示哪组菜单
+    // === 核心修复：判断当前应该显示哪组菜单 ===
     const currentMenuGroups = computed(() => {
-      // 如果在课程里，显示课程专属菜单
+      const path = route.path
+
+      // A. 课程内 -> 优先级最高
       if (inCourseContext.value) {
         return menuConfig.courseSmart
       }
-      // 如果是资源相关
-      if (route.path.includes('/resource') || route.path.includes('/library') || route.path.includes('/classroom')) {
-        return menuConfig.resource
-      }
-      // 如果是校园相关
-      if (route.path.includes('/campus') || route.path.includes('/dorm') || route.path.includes('/forum')) {
+
+      // B. 校园生活 -> 【关键修复】这里必须精确匹配到 studorm 和 forum
+      if (path.includes('/student/studorm') || path.includes('/student/forum') || path.includes('/student/campushome') || path.includes('postdetail')) {
         return menuConfig.campus
       }
-      // 默认显示教学首页
+
+      // C. 资源管理
+      if (path.includes('/student/classroom') || path.includes('/student/library') || path.includes('/student/resourcehome')) {
+        return menuConfig.resource
+      }
+
+      // D. 默认显示教学管理
       return menuConfig.teachingDefault
     })
 
-    // 4. 计算标题
+    // 计算标题
     const currentModuleTitle = computed(() => {
+      const path = route.path
       if (inCourseContext.value) return '智能学习'
-      if (route.path.includes('/resource')) return '资源管理'
-      if (route.path.includes('/campus') || route.path.includes('/dorm')) return '校园生活'
+      if (path.includes('studorm') || path.includes('forum')) return '校园生活'
+      if (path.includes('resource') || path.includes('library') || path.includes('classroom')) return '资源管理'
       return '教学管理'
     })
 
-    // 5. 路径解析工具 (核心！)
+    // 路径解析
     const resolvePath = (path) => {
-      // 如果不是以 / 开头，说明是课程内的相对路径，需要加上前缀
       if (!path.startsWith('/')) {
         return `/student/course/${courseId.value}/${path}`
       }
       return path
     }
 
-    // 6. 高亮逻辑
+    // 高亮逻辑
     const isItemActive = (item) => {
       const fullPath = resolvePath(item.path)
-      return route.path === fullPath || route.path.startsWith(fullPath + '/')
+      return route.path === fullPath || route.path.startsWith(fullPath)
     }
 
     return {

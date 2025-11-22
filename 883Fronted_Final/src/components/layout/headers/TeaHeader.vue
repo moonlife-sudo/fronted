@@ -21,31 +21,6 @@
           </button>
         </div>
 
-        <div class="message-container" ref="messageRef">
-          <button class="icon-btn" @click="toggleMessage">
-            <img src="@/assets/images/message-icon.png" alt="消息" class="icon-img">
-            <span class="badge" v-if="unreadCount > 0">{{ unreadCount }}</span>
-          </button>
-
-          <div v-if="showMessageBox" class="message-dropdown">
-            <div class="msg-header">
-              <span>消息通知</span>
-              <span class="clear-btn" @click="clearMessages">全部已读</span>
-            </div>
-            <div class="msg-list">
-              <div v-for="msg in messages" :key="msg.id" class="msg-item">
-                <div class="msg-avatar">{{ msg.sender[0] }}</div>
-                <div class="msg-content">
-                  <p class="sender">{{ msg.sender }}</p>
-                  <p class="text">{{ msg.text }}</p>
-                </div>
-                <span class="msg-time">{{ msg.time }}</span>
-              </div>
-              <div v-if="messages.length === 0" class="empty-msg">暂无新消息</div>
-            </div>
-          </div>
-        </div>
-
         <div class="user-avatar-container" ref="avatarRef" @click="toggleUserMenu">
           <div class="user-avatar">
             <img v-if="hasAvatar" src="https://placeholder.pics/svg/150x150/DEDEDE/555555/教师头像" alt="用户头像"
@@ -83,19 +58,16 @@ export default {
     const route = useRoute()
     const router = useRouter()
 
-    // --- 导航逻辑 (教师端菜单) ---
     const topLevelMenu = ref([
-      { name: '首页', path: '/home' }, // 通用首页
-      { name: '教学管理', path: '/teacher/teachinghome' }, // 教师核心功能
+      { name: '首页', path: '/teacher/home' }, // 修复路径
+      { name: '教学管理', path: '/teacher/teachinghome' },
       { name: '资源中心', path: '/teacher/resourcehome' },
     ])
 
     const isActive = (menuItem) => {
-      if (menuItem.path === '/home') return route.path === '/home'
-      return route.path.startsWith(menuItem.path)
+      return route.path === menuItem.path || (menuItem.path !== '/teacher/home' && route.path.startsWith(menuItem.path))
     }
 
-    // --- 用户信息逻辑 ---
     const userInfo = ref({ name: '周老师' })
     const hasAvatar = ref(true)
     const showUserMenu = ref(false)
@@ -104,13 +76,17 @@ export default {
     onMounted(() => {
       const savedUser = localStorage.getItem('userInfo')
       if (savedUser) {
-        userInfo.value = JSON.parse(savedUser)
+        try { userInfo.value = JSON.parse(savedUser) } catch (e) { }
       }
+      document.addEventListener('click', handleClickOutside)
+    })
+
+    onUnmounted(() => {
+      document.removeEventListener('click', handleClickOutside)
     })
 
     const toggleUserMenu = () => {
       showUserMenu.value = !showUserMenu.value
-      showMessageBox.value = false
     }
 
     const goToProfile = () => {
@@ -125,43 +101,11 @@ export default {
       }
     }
 
-    // --- 消息逻辑 ---
-    const showMessageBox = ref(false)
-    const messageRef = ref(null)
-    const unreadCount = ref(3)
-    const messages = ref([
-      { id: 1, sender: '教务处', text: '请于本周五前提交教学大纲。', time: '09:00' },
-      { id: 2, sender: '张同学', text: '老师，请问作业什么时候截止？', time: '昨天' },
-      { id: 3, sender: '系统通知', text: '您的课程《计算机导论》已通过审核。', time: '前天' }
-    ])
-
-    const toggleMessage = () => {
-      showMessageBox.value = !showMessageBox.value
-      showUserMenu.value = false
-    }
-
-    const clearMessages = () => {
-      messages.value = []
-      unreadCount.value = 0
-    }
-
-    // 点击外部关闭菜单
     const handleClickOutside = (event) => {
       if (avatarRef.value && !avatarRef.value.contains(event.target)) {
         showUserMenu.value = false
       }
-      if (messageRef.value && !messageRef.value.contains(event.target)) {
-        showMessageBox.value = false
-      }
     }
-
-    onMounted(() => {
-      document.addEventListener('click', handleClickOutside)
-    })
-
-    onUnmounted(() => {
-      document.removeEventListener('click', handleClickOutside)
-    })
 
     return {
       topLevelMenu,
@@ -172,27 +116,20 @@ export default {
       avatarRef,
       toggleUserMenu,
       goToProfile,
-      handleLogout,
-      showMessageBox,
-      messageRef,
-      toggleMessage,
-      unreadCount,
-      messages,
-      clearMessages
+      handleLogout
     }
   }
 }
 </script>
 
 <style scoped>
-/* 复用 StuHeader 的样式，主色调保持一致 */
 .app-header {
   position: fixed;
   inset-block-start: 0;
   inset-inline-start: 0;
   inset-inline-end: 0;
   z-index: 1000;
-  background-color: var(--primary-color, #2A5CAA);
+  background-color: #2A5CAA;
   color: white;
   block-size: 60px;
   display: flex;
@@ -215,21 +152,23 @@ export default {
 }
 
 .nav-logo {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: bold;
   color: white;
   text-decoration: none;
+  display: flex;
+  align-items: center;
 }
 
 .main-nav {
   display: flex;
-  gap: 5px;
+  gap: 10px;
 }
 
 .nav-item {
   color: rgba(255, 255, 255, 0.85);
   text-decoration: none;
-  padding: 8px 16px;
+  padding: 6px 16px;
   border-radius: 4px;
   font-size: 14px;
   transition: all 0.3s;
@@ -237,7 +176,7 @@ export default {
 
 .nav-item:hover,
 .nav-item.active {
-  background-color: rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.2);
   color: white;
   font-weight: 500;
 }
@@ -248,20 +187,25 @@ export default {
   gap: 20px;
 }
 
+/* 统一的搜索框样式 */
 .search-box {
   display: flex;
+  align-items: center;
   background: rgba(255, 255, 255, 0.15);
   border-radius: 20px;
-  padding: 5px 15px;
-  align-items: center;
+  padding: 0 15px;
+  block-size: 32px;
+  inline-size: 220px;
+  /* 固定宽度，防止太宽 */
 }
 
 .search-input {
   background: transparent;
   border: none;
   color: white;
-  inline-size: 150px;
+  flex: 1;
   outline: none;
+  font-size: 13px;
 }
 
 .search-input::placeholder {
@@ -278,149 +222,10 @@ export default {
 }
 
 .icon-img {
-  inline-size: 20px;
-  block-size: 20px;
+  inline-size: 16px;
+  block-size: 16px;
   filter: brightness(0) invert(1);
   opacity: 0.9;
-}
-
-.message-container {
-  position: relative;
-}
-
-.icon-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 5px;
-  position: relative;
-}
-
-.badge {
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline-end: -5px;
-  background-color: #ff4d4f;
-  color: white;
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 10px;
-  transform: scale(0.8);
-}
-
-/* 下拉菜单样式 */
-.message-dropdown,
-.user-dropdown {
-  position: absolute;
-  inset-block-start: 50px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  color: #333;
-  z-index: 1001;
-  overflow: hidden;
-  animation: slideIn 0.2s ease;
-}
-
-.message-dropdown {
-  inset-inline-end: -50px;
-  inline-size: 300px;
-}
-
-.user-dropdown {
-  inset-inline-end: 0;
-  inline-size: 160px;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.msg-header {
-  padding: 12px 16px;
-  border-block-end: 1px solid #eee;
-  display: flex;
-  justify-content: space-between;
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.clear-btn {
-  color: #666;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: normal;
-}
-
-.msg-list {
-  max-block-size: 300px;
-  overflow-y: auto;
-}
-
-.msg-item {
-  display: flex;
-  padding: 12px 16px;
-  border-block-end: 1px solid #f5f5f5;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.msg-item:hover {
-  background: #f9f9f9;
-}
-
-.msg-avatar {
-  inline-size: 36px;
-  block-size: 36px;
-  background: #e6f7ff;
-  color: #1890ff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-inline-end: 12px;
-  font-weight: bold;
-}
-
-.msg-content {
-  flex: 1;
-  overflow: hidden;
-}
-
-.sender {
-  font-size: 14px;
-  font-weight: 500;
-  margin: 0 0 4px 0;
-}
-
-.text {
-  font-size: 12px;
-  color: #666;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin: 0;
-}
-
-.msg-time {
-  font-size: 11px;
-  color: #999;
-  margin-inline-start: 8px;
-}
-
-.empty-msg {
-  padding: 20px;
-  text-align: center;
-  color: #999;
-  font-size: 13px;
 }
 
 .user-avatar-container {
@@ -434,6 +239,10 @@ export default {
   border-radius: 50%;
   overflow: hidden;
   border: 2px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .avatar-img {
@@ -443,13 +252,21 @@ export default {
 }
 
 .avatar-placeholder {
-  inline-size: 100%;
-  block-size: 100%;
-  background: rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  color: white;
   font-weight: bold;
+}
+
+.user-dropdown {
+  position: absolute;
+  inset-block-start: 50px;
+  inset-inline-end: 0;
+  inline-size: 160px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  color: #333;
+  z-index: 1001;
+  overflow: hidden;
 }
 
 .user-info-header {

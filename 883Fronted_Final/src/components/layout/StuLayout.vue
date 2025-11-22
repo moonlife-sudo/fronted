@@ -6,10 +6,9 @@
 
     <main class="main-content" :class="{ 'with-sidebar': showSidebar }">
 
-      <div v-if="showSidebar && currentTabs.length > 0" class="secondary-navbar">
+      <div v-if="currentTabs.length > 0" class="secondary-navbar">
         <div class="module-tabs">
-          <router-link v-for="tab in currentTabs" :key="tab.path" :to="resolveTabPath(tab.path)" class="tab-item"
-            active-class="active">
+          <router-link v-for="tab in currentTabs" :key="tab.path" :to="tab.path" class="tab-item" active-class="active">
             {{ tab.name }}
           </router-link>
         </div>
@@ -24,7 +23,7 @@
 
 <script>
 import StudentHeader from './headers/StuHeader.vue'
-import StuSidebar from './siderbars/StuSidebar.vue' // 引入侧边栏
+import StuSidebar from './siderbars/StuSidebar.vue'
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -32,7 +31,7 @@ export default {
   name: 'StudentLayout',
   components: {
     StudentHeader,
-    StuSidebar // 注册组件
+    StuSidebar
   },
   setup() {
     const route = useRoute()
@@ -47,36 +46,44 @@ export default {
       if (route.meta && typeof route.meta.showSidebar !== 'undefined') {
         return route.meta.showSidebar
       }
-      return route.path.startsWith('/student')
+      // 默认学生端除了特定页面外都显示
+      return route.path.startsWith('/student') && !['/student/profile', '/student/campushome', '/student/resourcehome'].includes(route.path)
     })
 
-    // 顶部 Tab 配置 (可选)
+    // === 顶部 Tab 配置 (关键修复) ===
     const moduleConfigs = {
       'leave': [
-        { name: '我要请假', path: 'leave/apply' },
-        { name: '申请记录', path: 'leave/records' }
+        { name: '我要请假', path: '/student/leave/apply' },
+        { name: '申请记录', path: '/student/leave/records' }
+      ],
+      'resource': [
+        { name: '可用教室', path: '/student/classroom' },
+        { name: '书籍借阅', path: '/student/library' }
+      ],
+      'campus': [
+        { name: '宿舍分配', path: '/student/studorm' },
+        { name: '校园论坛', path: '/student/forum' }
       ]
     }
 
     const currentTabs = computed(() => {
       const path = route.path
+
+      // 1. 匹配请假
       if (path.includes('/leave')) return moduleConfigs['leave']
+
+      // 2. 匹配资源 (修复：只要是 classroom 或 library 页面，就显示这两个 tab)
+      if (path.includes('/classroom') || path.includes('/library')) return moduleConfigs['resource']
+
+      // 3. 匹配校园生活
+      if (path.includes('/studorm') || path.includes('/forum') || path.includes('/postdetail')) return moduleConfigs['campus']
+
       return []
     })
 
-    const resolveTabPath = (subPath) => {
-      // 1. 如果在课程内，拼课程路径
-      if (courseId.value) {
-        return `/student/course/${courseId.value}/${subPath}`
-      }
-      // 2. 【修复】如果在全局，强制拼上 /student/ 前缀，变成绝对路径
-      return `/student/${subPath}`
-    }
-
     return {
       showSidebar,
-      currentTabs,
-      resolveTabPath
+      currentTabs
     }
   }
 }
@@ -92,18 +99,22 @@ export default {
 
 .main-content {
   padding-block-start: 60px;
+  /* 避开顶部 Header */
   min-block-size: 100vh;
-  transition: margin-inline-start 0.3s ease;
+  transition: margin-left 0.2s ease;
   display: flex;
   flex-direction: column;
+  position: relative;
+  inline-size: 100%;
 }
 
-/* 关键样式：有侧边栏时，内容向右推 240px */
+/* 有侧边栏时向右偏移 */
 .main-content.with-sidebar {
   margin-inline-start: 240px;
+  inline-size: calc(100% - 240px);
 }
 
-/* 次级导航栏样式 (仿教师端) */
+/* === 修复后的次级导航栏样式 === */
 .secondary-navbar {
   background: white;
   padding: 0 30px;
@@ -112,18 +123,19 @@ export default {
   display: flex;
   align-items: center;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+
   position: sticky;
   inset-block-start: 60px;
-  z-index: 998;
+  /* 紧贴 Header 下方 */
+  z-index: 99;
+  /* 确保在内容之上，Header之下 */
   inline-size: 100%;
-  box-sizing: border-box;
 }
 
 .content-body {
   flex: 1;
   padding: 24px;
   inline-size: 100%;
-  box-sizing: border-box;
 }
 
 .module-tabs {

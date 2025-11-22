@@ -166,7 +166,7 @@ export default {
 }
 
 .forum-container {
-  max-width: 1200px;
+  max-inline-size: 1200px;
   margin: 80px auto 40px;
   padding: 0 var(--spacing);
 }
@@ -175,7 +175,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--spacing);
+  margin-block-end: var(--spacing);
   flex-wrap: wrap;
   gap: var(--spacing);
 }
@@ -189,8 +189,8 @@ export default {
 .search-container {
   display: flex;
   align-items: center;
-  max-width: 400px;
-  width: 100%;
+  max-inline-size: 400px;
+  inline-size: 100%;
 }
 
 .search-input {
@@ -225,7 +225,7 @@ export default {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--spacing);
-  margin-top: var(--spacing);
+  margin-block-start: var(--spacing);
 }
 
 .post-card {
@@ -243,7 +243,7 @@ export default {
 }
 
 .post-header {
-  margin-bottom: var(--small-spacing);
+  margin-block-end: var(--small-spacing);
 }
 
 .post-title {
@@ -260,7 +260,7 @@ export default {
 }
 
 .post-content {
-  margin-bottom: var(--spacing);
+  margin-block-end: var(--spacing);
   color: var(--text-color);
 }
 
@@ -268,6 +268,7 @@ export default {
   margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -310,10 +311,10 @@ export default {
 
 .create-post-btn {
   position: fixed;
-  bottom: 30px;
-  right: 30px;
-  width: 56px;
-  height: 56px;
+  inset-block-end: 30px;
+  inset-inline-end: 30px;
+  inline-size: 56px;
+  block-size: 56px;
   background-color: var(--secondary-color);
   color: white;
   border: none;
@@ -340,7 +341,7 @@ export default {
   }
   
   .search-container {
-    max-width: 100%;
+    max-inline-size: 100%;
   }
   
   .post-footer {

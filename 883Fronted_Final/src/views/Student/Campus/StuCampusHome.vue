@@ -166,13 +166,13 @@ export default {
 }
 
 .home-page img {
-  max-width: 100%;
-  height: auto;
+  max-inline-size: 100%;
+  block-size: auto;
 }
 
 /* 容器布局 */
 .home-page .container {
-  max-width: 1200px;
+  max-inline-size: 1200px;
   margin: 0 auto;
   padding: 80px 20px 20px;
 }
@@ -186,7 +186,7 @@ export default {
 .home-page .welcome-section h1 {
   font-size: 2.2rem;
   color: var(--primary-color);
-  margin-bottom: 10px;
+  margin-block-end: 10px;
 }
 
 .home-page .welcome-section .subtitle {
@@ -198,7 +198,7 @@ export default {
 .home-page .role-selector {
   display: flex;
   justify-content: center;
-  margin-bottom: 30px;
+  margin-block-end: 30px;
   gap: 10px;
 }
 
@@ -236,7 +236,7 @@ export default {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
-  margin-bottom: 40px;
+  margin-block-end: 40px;
 }
 
 /* 卡片通用样式 */
@@ -285,13 +285,13 @@ export default {
 .home-page .dorm-pending i {
   font-size: 3rem;
   color: var(--primary-color);
-  margin-bottom: 15px;
+  margin-block-end: 15px;
   display: block;
 }
 
 .home-page .dorm-pending h4 {
   color: var(--primary-color);
-  margin-bottom: 10px;
+  margin-block-end: 10px;
   font-size: 1.2rem;
 }
 
@@ -330,7 +330,7 @@ export default {
   align-items: center;
   gap: 10px;
   padding: 12px;
-  margin-bottom: 10px;
+  margin-block-end: 10px;
   border-radius: var(--radius);
   transition: var(--transition);
 }
@@ -349,16 +349,16 @@ export default {
   display: flex;
   gap: 15px;
   padding: 12px 0;
-  border-bottom: 1px solid var(--border-color);
+  border-block-end: 1px solid var(--border-color);
 }
 
 .home-page .activity-item:last-child {
-  border-bottom: none;
+  border-block-end: none;
 }
 
 .home-page .activity-icon {
-  width: 36px;
-  height: 36px;
+  inline-size: 36px;
+  block-size: 36px;
   background-color: var(--primary-light);
   color: var(--primary-color);
   border-radius: 50%;
@@ -372,7 +372,7 @@ export default {
 }
 
 .home-page .activity-content p {
-  margin-bottom: 4px;
+  margin-block-end: 4px;
 }
 
 .home-page .activity-content small {
@@ -383,20 +383,20 @@ export default {
 /* 通知卡片 */
 .home-page .notice-item {
   padding: 12px 0;
-  border-bottom: 1px solid var(--border-color);
+  border-block-end: 1px solid var(--border-color);
 }
 
 .home-page .notice-item:last-child {
-  border-bottom: none;
+  border-block-end: none;
 }
 
 .home-page .notice-item h4 {
-  margin-bottom: 8px;
+  margin-block-end: 8px;
   color: var(--primary-color);
 }
 
 .home-page .notice-item p {
-  margin-bottom: 8px;
+  margin-block-end: 8px;
   color: var(--text-light);
 }
 
@@ -420,8 +420,8 @@ export default {
   font-weight: 500;
   text-decoration: none;
   justify-content: center;
-  width: 100%;
-  margin-top: 15px;
+  inline-size: 100%;
+  margin-block-start: 15px;
 }
 
 .home-page .primary-btn:hover {
@@ -430,18 +430,18 @@ export default {
 
 /* 表单样式 */
 .home-page .form-group {
-  margin-bottom: 15px;
+  margin-block-end: 15px;
 }
 
 .home-page .form-group label {
   display: block;
-  margin-bottom: 8px;
+  margin-block-end: 8px;
   font-weight: 500;
 }
 
 .home-page .form-group input,
 .home-page .form-group textarea {
-  width: 100%;
+  inline-size: 100%;
   padding: 10px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
@@ -459,20 +459,20 @@ export default {
 /* 帖子卡片 */
 .home-page .post-item {
   padding: 12px 0;
-  border-bottom: 1px solid var(--border-color);
+  border-block-end: 1px solid var(--border-color);
 }
 
 .home-page .post-item:last-child {
-  border-bottom: none;
+  border-block-end: none;
 }
 
 .home-page .post-item h4 {
-  margin-bottom: 8px;
+  margin-block-end: 8px;
   color: var(--primary-color);
 }
 
 .home-page .post-excerpt {
-  margin-bottom: 8px;
+  margin-block-end: 8px;
   color: var(--text-light);
   display: -webkit-box;
   line-clamp: 2;
@@ -493,7 +493,7 @@ export default {
   align-items: center;
   gap: 5px;
   color: var(--secondary-color);
-  margin-top: 10px;
+  margin-block-start: 10px;
   font-weight: 500;
 }
 
@@ -538,7 +538,7 @@ export default {
   }
   
   .home-page .role-btn {
-    width: 100%;
+    inline-size: 100%;
   }
   
   .home-page .container {
