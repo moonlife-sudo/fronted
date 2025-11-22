@@ -1,0 +1,694 @@
+<template>
+  <div class="profile-container">
+    <div class="profile-sidebar">
+      <div class="user-card">
+          <div class="avatar-container">
+          <img 
+            loading="lazy" 
+            :src="userInfo.avatar_url || 'https://placeholder.pics/svg/150x150/DEDEDE/555555/用户头像'" 
+            alt="用户头像" 
+            class="avatar"
+          >
+          <button class="avatar-upload" @click="triggerAvatarUpload">
+            <i class="bi bi-camera-fill"></i>
+          </button>
+        </div>
+        <h3 class="username">{{ userInfo.full_name || '加载中...' }}</h3>
+        <p class="user-role">{{ userInfo.role }}</p>
+      </div>
+      
+      <nav class="profile-nav">
+        <ul>
+          <li 
+            v-for="nav in navItems" 
+            :key="nav.id"
+            :class="{ active: activeSection === nav.id }"
+          >
+            <a href="#" @click.prevent="switchSection(nav.id)">
+              <i :class="nav.icon"></i> {{ nav.text }}
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    
+    <div class="profile-content">
+      <!-- 基本信息 -->
+      <section id="basic-info" class="content-section" :class="{ active: activeSection === 'basic-info' }">
+        <div class="section-header">
+          <h2>基本信息</h2>
+          <button class="edit-btn" @click="enableEdit">
+            <i class="bi bi-pencil-fill"></i> 编辑
+          </button>
+        </div>
+        
+        <form class="info-form" @submit.prevent="saveBasicInfo">
+          <div class="form-group">
+            <label for="name">姓名</label>
+            <input 
+              type="text" 
+              id="name" 
+              v-model="userInfo.full_name" 
+              :readonly="!isEditing"
+            >
+          </div>
+          
+          <div class="form-group">
+            <label for="student-id">学号</label>
+            <input 
+              type="text" 
+              id="student-id" 
+              v-model="userInfo.student_id_number" 
+              readonly
+            >
+          </div>
+          
+          <div class="form-group">
+            <label for="major">专业</label>
+            <input 
+              type="text" 
+              id="major" 
+              v-model="userInfo.major" 
+              :readonly="!isEditing"
+            >
+          </div>
+          
+          <div class="form-group">
+            <label for="class-name">班级</label>
+            <input 
+              type="text" 
+              id="class-name" 
+              v-model="userInfo.class_name" 
+              :readonly="!isEditing"
+            >
+          </div>
+          
+          <div class="form-group">
+            <label for="grade">年级</label>
+            <input 
+              type="text" 
+              id="grade" 
+              v-model="userInfo.grade" 
+              :readonly="!isEditing"
+            >
+          </div>
+          
+          <div class="form-group">
+            <label for="email">电子邮箱</label>
+            <input 
+              type="email" 
+              id="email" 
+              v-model="userInfo.email" 
+              :readonly="!isEditing"
+            >
+          </div>
+          
+          <div class="form-group">
+            <label for="phone">手机号码</label>
+            <input 
+              type="tel" 
+              id="phone" 
+              v-model="userInfo.phone_number" 
+              :readonly="!isEditing"
+            >
+          </div>
+          
+          <div class="form-actions" v-if="isEditing">
+            <button type="button" class="cancel-btn" @click="cancelEdit">取消</button>
+            <button type="submit" class="save-btn">保存</button>
+          </div>
+        </form>
+      </section>
+      
+      <!-- 账号安全 -->
+      <section id="account-security" class="content-section" :class="{ active: activeSection === 'account-security' }">
+        <div class="section-header">
+          <h2>账号安全</h2>
+        </div>
+        
+        <div class="security-item">
+          <div class="security-info">
+            <i class="bi bi-shield-lock-fill"></i>
+            <div>
+              <h3>登录密码</h3>
+              <p>定期更改密码以确保账号安全</p>
+            </div>
+          </div>
+          <button class="modify-btn" @click="modifyPassword">修改密码</button>
+        </div>
+        
+        <div class="security-item">
+          <div class="security-info">
+            <i class="bi bi-phone-fill"></i>
+            <div>
+              <h3>手机绑定</h3>
+              <p>已绑定手机：{{ maskedPhone }}</p>
+            </div>
+          </div>
+          <button class="modify-btn" @click="enableEdit">编辑信息</button>
+        </div>
+        
+        <div class="security-item">
+          <div class="security-info">
+            <i class="bi bi-envelope-fill"></i>
+            <div>
+              <h3>邮箱绑定</h3>
+              <p>已绑定邮箱：{{ maskedEmail }}</p>
+            </div>
+          </div>
+          <button class="modify-btn" @click="enableEdit">编辑信息</button>
+        </div>
+        
+        <!-- 修改密码对话框 -->
+        <div v-if="passwordDialog.visible" class="password-dialog-overlay" @click.self="passwordDialog.visible = false">
+          <div class="password-dialog">
+            <h3>修改密码</h3>
+            <div class="form-group">
+              <label>旧密码</label>
+              <input type="password" v-model="passwordDialog.oldPassword" placeholder="请输入旧密码">
+            </div>
+            <div class="form-group">
+              <label>新密码</label>
+              <input type="password" v-model="passwordDialog.newPassword" placeholder="请输入新密码（至少6位）">
+            </div>
+            <div class="form-group">
+              <label>确认新密码</label>
+              <input type="password" v-model="passwordDialog.confirmPassword" placeholder="请再次输入新密码">
+            </div>
+            <div class="dialog-actions">
+              <button class="cancel-btn" @click="passwordDialog.visible = false">取消</button>
+              <button class="save-btn" @click="savePassword" :disabled="loading">保存</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="security-tips">
+          <i class="bi bi-info-circle-fill"></i>
+          <p>为保障您的账号安全，建议定期修改密码并绑定手机和邮箱</p>
+        </div>
+      </section>
+      
+      <!-- 消息通知 -->
+      <section id="notifications" class="content-section" :class="{ active: activeSection === 'notifications' }">
+        <div class="section-header">
+          <h2>消息通知</h2>
+          <button class="mark-all-read" @click="markAllAsRead">全部标记为已读</button>
+        </div>
+        
+        <div class="notification-list">
+          <div 
+            v-for="notification in notifications" 
+            :key="notification.id"
+            class="notification-item" 
+            :class="{ unread: notification.unread }"
+          >
+            <div class="notification-icon">
+              <i :class="notification.icon"></i>
+            </div>
+            <div class="notification-content">
+              <h3>{{ notification.title }}</h3>
+              <p>{{ notification.content }}</p>
+              <span class="notification-time">{{ notification.time }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- 系统设置 -->
+      <section id="settings" class="content-section" :class="{ active: activeSection === 'settings' }">
+        
+        <div class="settings-group">
+          <h3>通知设置</h3>
+          <div 
+            v-for="setting in notificationSettings" 
+            :key="setting.id"
+            class="setting-item"
+          >
+            <div class="setting-info">
+              <h4>{{ setting.name }}</h4>
+              <p>{{ setting.description }}</p>
+            </div>
+            <label class="switch">
+              <input 
+                type="checkbox" 
+                v-model="setting.enabled"
+                @change="updateSetting(setting)"
+              >
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="settings-group">
+          <h3>隐私设置</h3>
+          <div 
+            v-for="setting in privacySettings" 
+            :key="setting.id"
+            class="setting-item"
+          >
+            <div class="setting-info">
+              <h4>{{ setting.name }}</h4>
+              <p>{{ setting.description }}</p>
+            </div>
+            <label class="switch">
+              <input 
+                type="checkbox" 
+                v-model="setting.enabled"
+                @change="updateSetting(setting)"
+              >
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+        
+      </section>
+    </div>
+  </div>
+</template>
+
+<script>
+import { getProfile, updateProfile, updatePassword, uploadFile } from '@/api/user'
+
+export default {
+  name: 'UserProfile',
+  data() {
+    return {
+      activeSection: 'basic-info',
+      isEditing: false,
+      loading: false,
+      passwordDialog: {
+        visible: false,
+        oldPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      },
+      originalUserInfo: null, // 保存原始数据用于取消编辑
+      userInfo: {
+        full_name: '',
+        username: '',
+        student_id_number: '',
+        email: '',
+        phone_number: '',
+        avatar_url: '',
+        major: '',
+        class_name: '',
+        grade: '',
+        role: '学生'
+      },
+      navItems: [
+        { id: 'basic-info', text: '基本信息', icon: 'bi bi-person-fill' },
+        { id: 'account-security', text: '账号安全', icon: 'bi bi-shield-lock-fill' },
+        { id: 'notifications', text: '消息通知', icon: 'bi bi-bell-fill' },
+        { id: 'settings', text: '系统设置', icon: 'bi bi-gear-fill' }
+      ],
+      notifications: [
+        {
+          id: 1,
+          title: '系统公告：新学期选课通知',
+          content: '新学期选课系统将于2023年9月1日开放，请同学们提前做好准备...',
+          time: '2023-08-25 10:30',
+          icon: 'bi bi-megaphone-fill',
+          unread: true
+        },
+        {
+          id: 2,
+          title: '课程提醒：计算机组成原理',
+          content: '您的计算机组成原理课程将于明天上午8:00在教三楼301教室上课...',
+          time: '2023-08-24 15:45',
+          icon: 'bi bi-calendar-event-fill',
+          unread: false
+        },
+        {
+          id: 3,
+          title: '作业提醒：数据结构作业',
+          content: '数据结构课程的第二次作业已发布，截止日期为2023年9月5日...',
+          time: '2023-08-23 09:20',
+          icon: 'bi bi-book-fill',
+          unread: false
+        }
+      ],
+      
+      notificationSettings: [
+        {
+          id: 1,
+          name: '课程提醒',
+          description: '课程开始前提醒我',
+          enabled: true
+        },
+        {
+          id: 2,
+          name: '作业截止提醒',
+          description: '作业截止前提醒我',
+          enabled: true
+        },
+        {
+          id: 3,
+          name: '系统公告',
+          description: '接收系统公告和通知',
+          enabled: true
+        }
+      ],
+      privacySettings: [
+        {
+          id: 1,
+          name: '公开个人信息',
+          description: '允许其他同学查看我的基本信息',
+          enabled: false
+        },
+      ],
+      themeColors: ['blue', 'green', 'purple']
+    }
+  },
+  computed: {
+    maskedPhone() {
+      return this.userInfo.phone_number ? this.userInfo.phone_number.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') : '未绑定'
+    },
+    maskedEmail() {
+      return this.userInfo.email ? this.userInfo.email.replace(/(.{2}).*@(.*)/, '$1****@$2') : '未绑定'
+    },
+    filteredActivities() {
+      // 根据选择的时间范围过滤活动
+      // 这里简化处理，实际项目中需要根据日期计算
+      return this.activities
+    }
+  },
+  methods: {
+    switchSection(sectionId) {
+      this.activeSection = sectionId
+    },
+    enableEdit() {
+      this.isEditing = true
+    },
+    cancelEdit() {
+      this.isEditing = false
+      // 恢复原始数据
+      if (this.originalUserInfo) {
+        this.userInfo = JSON.parse(JSON.stringify(this.originalUserInfo))
+      }
+    },
+    async saveBasicInfo() {
+      if (this.loading) return
+      
+      // 检查token是否存在
+      const token = localStorage.getItem('token')
+      if (!token) {
+        alert('未登录，请先登录')
+        this.$router.push('/login')
+        return
+      }
+      
+      this.loading = true
+      try {
+        const basicInfo = {
+          email: this.userInfo.email || null,
+          phone_number: this.userInfo.phone_number || null
+        }
+        
+        const profileInfo = {
+          major: this.userInfo.major || null,
+          class_name: this.userInfo.class_name || null,
+          grade: this.userInfo.grade || null
+        }
+        
+        const result = await updateProfile({
+          basicInfo,
+          profileInfo
+        })
+        
+        if (result.code === 1) {
+          alert('个人信息已保存成功！')
+          this.isEditing = false
+          // 重新加载用户信息
+          await this.loadUserInfo()
+        } else {
+          alert(result.msg || '保存失败，请重试')
+        }
+      } catch (error) {
+        console.error('保存失败:', error)
+        if (error.message && error.message.includes('未登录')) {
+          alert('登录已过期，请重新登录')
+          this.$router.push('/login')
+        } else {
+          alert(error.message || '保存失败，请稍后重试')
+        }
+      } finally {
+        this.loading = false
+      }
+    },
+    modifyPassword() {
+      this.passwordDialog.visible = true
+      this.passwordDialog.oldPassword = ''
+      this.passwordDialog.newPassword = ''
+      this.passwordDialog.confirmPassword = ''
+    },
+    async savePassword() {
+      if (!this.passwordDialog.oldPassword || !this.passwordDialog.newPassword) {
+        alert('请填写完整信息')
+        return
+      }
+      
+      if (this.passwordDialog.newPassword !== this.passwordDialog.confirmPassword) {
+        alert('两次输入的密码不一致')
+        return
+      }
+      
+      if (this.passwordDialog.newPassword.length < 6) {
+        alert('密码长度至少6位')
+        return
+      }
+      
+      this.loading = true
+      try {
+        const result = await updatePassword({
+          oldPassword: this.passwordDialog.oldPassword,
+          newPassword: this.passwordDialog.newPassword
+        })
+        
+        if (result.code === 1) {
+          alert('密码修改成功！')
+          this.passwordDialog.visible = false
+        } else {
+          alert(result.msg || '密码修改失败')
+        }
+      } catch (error) {
+        console.error('修改密码失败:', error)
+        alert(error.message || '修改密码失败，请稍后重试')
+      } finally {
+        this.loading = false
+      }
+    },
+    async loadUserInfo() {
+      this.loading = true
+      try {
+        // 检查token是否存在
+        const token = localStorage.getItem('token')
+        if (!token) {
+          alert('未登录，请先登录')
+          this.$router.push('/login')
+          return
+        }
+        
+        const result = await getProfile()
+        if (result.code === 1 && result.data) {
+          const data = result.data
+          this.userInfo = {
+            full_name: data.full_name || '',
+            username: data.username || '',
+            student_id_number: data.profile?.student_id_number || '',
+            email: data.email || '',
+            phone_number: data.phone_number || '',
+            avatar_url: data.avatar_url || '',
+            major: data.profile?.major || '',
+            class_name: data.profile?.class_name || '',
+            grade: data.profile?.grade || '',
+            role: '学生'
+          }
+          // 保存原始数据
+          this.originalUserInfo = JSON.parse(JSON.stringify(this.userInfo))
+        } else {
+          alert(result.msg || '加载用户信息失败')
+        }
+      } catch (error) {
+        console.error('加载用户信息失败:', error)
+        if (error.message && error.message.includes('未登录')) {
+          alert('登录已过期，请重新登录')
+          this.$router.push('/login')
+        } else {
+          alert(error.message || '加载用户信息失败，请刷新页面重试')
+        }
+      } finally {
+        this.loading = false
+      }
+    },
+    markAllAsRead() {
+      this.notifications.forEach(notification => {
+        notification.unread = false
+      })
+      alert('所有通知已标记为已读')
+    },
+    changeViewMode(mode) {
+      this.viewMode = mode
+    },
+    removeFavorite(id) {
+      if (confirm('确定要删除此收藏项吗？')) {
+        this.favorites = this.favorites.filter(favorite => favorite.id !== id)
+      }
+    },
+    filterActivities() {
+      // 根据时间范围过滤活动
+      // 实际项目中需要实现具体的过滤逻辑
+      console.log('过滤活动，时间范围:', this.selectedTimeRange)
+    },
+    updateSetting(setting) {
+      console.log('更新设置:', setting)
+      // 实际项目中这里会发送API请求保存设置
+    },
+    changeTheme(color) {
+      this.selectedTheme = color
+      // 实际项目中这里会应用主题颜色
+      alert(`主题颜色已切换为: ${color}`)
+    },
+    changeFontSize() {
+      // 实际项目中这里会更改字体大小
+      alert(`字体大小已更改为: ${this.selectedFontSize}`)
+    },
+    async triggerAvatarUpload() {
+      const input = document.createElement('input')
+      input.type = 'file'
+      input.accept = 'image/*'
+      input.onchange = async (e) => {
+        const file = e.target.files[0]
+        if (file) {
+          // 检查文件大小（限制5MB）
+          if (file.size > 5 * 1024 * 1024) {
+            alert('图片大小不能超过5MB')
+            return
+          }
+          
+          this.loading = true
+          try {
+            const result = await uploadFile(file)
+            if (result.code === 1 && result.data) {
+              this.userInfo.avatar_url = result.data
+              // 更新头像显示
+              const avatarImg = document.querySelector('.avatar')
+              if (avatarImg) {
+                avatarImg.src = result.data
+              }
+              alert('头像上传成功！')
+            } else {
+              alert(result.msg || '头像上传失败')
+            }
+          } catch (error) {
+            console.error('上传头像失败:', error)
+            alert(error.message || '上传头像失败，请稍后重试')
+          } finally {
+            this.loading = false
+          }
+        }
+      }
+      input.click()
+    }
+  },
+  async mounted() {
+    await this.loadUserInfo()
+  }
+}
+</script>
+
+<style scoped>
+@import '@/assets/css/profile.css';
+
+/* 密码对话框样式 */
+.password-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.password-dialog {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.password-dialog h3 {
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 20px;
+}
+
+.password-dialog .form-group {
+  margin-bottom: 20px;
+}
+
+.password-dialog .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #666;
+  font-weight: 500;
+}
+
+.password-dialog .form-group input {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.password-dialog .form-group input:focus {
+  outline: none;
+  border-color: #2A5CAA;
+  box-shadow: 0 0 0 3px rgba(42, 92, 170, 0.1);
+}
+
+.password-dialog .dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.password-dialog .cancel-btn,
+.password-dialog .save-btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.password-dialog .cancel-btn {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.password-dialog .cancel-btn:hover {
+  background: #e0e0e0;
+}
+
+.password-dialog .save-btn {
+  background: #2A5CAA;
+  color: white;
+}
+
+.password-dialog .save-btn:hover {
+  background: #1e4b8b;
+}
+
+.password-dialog .save-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+</style>
