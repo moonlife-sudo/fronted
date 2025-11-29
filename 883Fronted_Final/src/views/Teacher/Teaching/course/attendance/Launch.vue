@@ -166,11 +166,11 @@ const handleSubmit = async () => {
 
 <style scoped>
 /* 样式保持不变，直接复用上一次的 */
-.attendance-launch { padding: 24px; max-width: 800px; margin: 0 auto; }
-.page-header h1 { color: #333; margin-bottom: 5px; }
+.attendance-launch { padding: 24px; max-inline-size: 800px; margin: 0 auto; }
+.page-header h1 { color: #333; margin-block-end: 5px; }
 .form-card { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-.form-group { margin-bottom: 25px; }
-.form-group label { display: block; font-weight: 600; margin-bottom: 10px; color: #444; }
+.form-group { margin-block-end: 25px; }
+.form-group label { display: block; font-weight: 600; margin-block-end: 10px; color: #444; }
 .course-badge { background: #f0f7ff; border: 1px solid #2A5CAA; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; color: #2A5CAA; }
 .course-name { font-weight: bold; font-size: 16px; }
 .course-id { font-size: 13px; opacity: 0.8; }
@@ -178,23 +178,23 @@ const handleSubmit = async () => {
 .type-card { flex: 1; border: 2px solid #eee; padding: 20px; border-radius: 10px; text-align: center; cursor: pointer; transition: all 0.3s; }
 .type-card:hover { border-color: #b3c7f9; }
 .type-card.active { border-color: #2A5CAA; background: #eef2ff; color: #2A5CAA; font-weight: bold; }
-.type-card i { font-size: 24px; display: block; margin-bottom: 8px; }
+.type-card i { font-size: 24px; display: block; margin-block-end: 8px; }
 .duration-options { display: flex; gap: 10px; }
 .tag { padding: 8px 16px; background: #f5f5f5; border-radius: 20px; cursor: pointer; transition: all 0.2s; }
 .tag.active { background: #2A5CAA; color: white; }
 .location-box { background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px dashed #ccc; }
-.btn-map { width: 100%; padding: 15px; background: white; border: 1px solid #2A5CAA; color: #2A5CAA; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-map { inline-size: 100%; padding: 15px; background: white; border: 1px solid #2A5CAA; color: #2A5CAA; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .location-result { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px; border-radius: 8px; }
-.res-item { font-size: 13px; color: #555; margin-bottom: 4px; }
+.res-item { font-size: 13px; color: #555; margin-block-end: 4px; }
 .btn-reselect { background: none; border: none; color: #2A5CAA; cursor: pointer; text-decoration: underline; }
-.button-submit { width: 100%; padding: 14px; background: #2A5CAA; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 20px; }
+.button-submit { inline-size: 100%; padding: 14px; background: #2A5CAA; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-block-start: 20px; }
 .button-submit:hover:not(:disabled) { background: #1e4b8b; }
 .button-submit:disabled { background: #ccc; }
 .map-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-.map-modal { background: white; width: 90%; max-width: 700px; height: 80vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
-.map-header { padding: 15px; display: flex; justify-content: space-between; border-bottom: 1px solid #eee; background: #f5f5f5; }
+.map-modal { background: white; inline-size: 90%; max-inline-size: 700px; block-size: 80vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
+.map-header { padding: 15px; display: flex; justify-content: space-between; border-block-end: 1px solid #eee; background: #f5f5f5; }
 .map-header .close { font-size: 24px; cursor: pointer; }
 .map-body { flex: 1; position: relative; }
-.map-footer { padding: 15px; text-align: center; background: #fff; border-top: 1px solid #eee; }
+.map-footer { padding: 15px; text-align: center; background: #fff; border-block-start: 1px solid #eee; }
 .button-confirm { background: #2A5CAA; color: white; border: none; padding: 10px 40px; border-radius: 20px; cursor: pointer; font-weight: bold; }
 </style>

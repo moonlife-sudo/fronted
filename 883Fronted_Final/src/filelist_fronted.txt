@@ -1,12 +1,19 @@
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\.DS_Store
+D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\api
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\App.vue
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\assets
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\components
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\filelist.txt
+D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\filelist_fronted
+D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\filelist_fronted.txt
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\main.js
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\router
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\store
+D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\utils
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\views
+D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\api\admin.js
+D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\api\student.js
+D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\api\user.js
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\assets\css
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\assets\images
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\assets\logo.png
@@ -30,6 +37,7 @@ D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\components\layout\sider
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\components\layout\siderbars\TeaSidebar.vue
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\router\index.js
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\store\index.js
+D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\utils\request.js
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\views\.DS_Store
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\views\Admin
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\views\Home.vue
@@ -41,6 +49,7 @@ D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\views\Admin\AdminProfil
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\views\Admin\AdminResourceHome.vue
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\views\Admin\Campus
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\views\Admin\Resource
+D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\views\Admin\UserManage
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\views\Admin\Campus\AdmCampusHome.vue
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\views\Admin\Campus\AdmDormAssign.vue
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\views\Admin\Campus\AdminDorm.vue
@@ -49,6 +58,9 @@ D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\views\Admin\Resource\Ad
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\views\Admin\Resource\AdminClassroom.vue
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\views\Admin\Resource\AdminLibrary.vue
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\views\Admin\Resource\AdminResourceHome.vue
+D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\views\Admin\UserManage\RoleManage.vue
+D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\views\Admin\UserManage\StudentManage.vue
+D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\views\Admin\UserManage\TeacherManage.vue
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\views\Student\.DS_Store
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\views\Student\Campus
 D:\vvvvvvvvvscode_workspace\fronted\883Fronted_Final\src\views\Student\Resource

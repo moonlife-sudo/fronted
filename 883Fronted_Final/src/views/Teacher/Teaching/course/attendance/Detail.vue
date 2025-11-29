@@ -1,97 +1,224 @@
 <template>
-  <div class="grades-detail">
+  <div class="attendance-detail">
     <div class="page-header">
-      <h1>成绩管理</h1>
-      <p>当前课程：{{ courseName }}</p>
+      <h1>考勤详情</h1>
+      <p class="page-description">展示学生考勤记录，可直接修改</p>
     </div>
 
-    <div class="card">
+    <section class="card">
       <div class="toolbar">
-        <button class="btn btn-primary" @click="$router.push('input')">录入成绩</button>
-        <button class="btn btn-outline" @click="$router.push('composition')">设置权重</button>
-        <span class="info">总人数: {{ students.length }}</span>
+        <button class="btn" @click="$router.push('launch')">发起签到</button>
+        <span class="info">共 {{ records.length }} 条记录</span>
       </div>
 
       <table class="data-table">
         <thead>
-        <tr>
-          <th>学号</th>
-          <th>姓名</th>
-          <th>平时 (30%)</th>
-          <th>期中 (30%)</th>
-          <th>期末 (40%)</th>
-          <th>总成绩</th>
-          <th>状态</th>
-        </tr>
+          <tr>
+            <th>记录ID</th>
+            <th>学生姓名</th>
+            <th>状态</th>
+            <th>备注</th>
+            <th>操作</th>
+          </tr>
         </thead>
         <tbody>
-        <tr v-for="stu in students" :key="stu.id">
-          <td>{{ stu.id }}</td>
-          <td>{{ stu.name }}</td>
-          <td>{{ stu.score1 || '-' }}</td>
-          <td>{{ stu.score2 || '-' }}</td>
-          <td>{{ stu.score3 || '-' }}</td>
-          <td class="total">{{ stu.total }}</td>
-          <td><span class="tag" :class="stu.total >= 60 ? 'pass' : 'fail'">{{ stu.total >= 60 ? '及格' : '不及格' }}</span></td>
-        </tr>
+          <tr v-for="record in records" :key="record.id">
+            <td>{{ record.id }}</td>
+            <td>{{ record.name }}</td>
+            <td>
+              <span :class="['status-tag', record.statusClass]">{{ record.statusText }}</span>
+            </td>
+            <td>{{ record.remarks || '-' }}</td>
+            <td>
+              <button class="btn-link" @click="openModify(record)">修改</button>
+            </td>
+          </tr>
         </tbody>
       </table>
+    </section>
+
+    <!-- 修改弹窗 -->
+    <div v-if="showModal" class="modal-overlay">
+      <div class="modal-card">
+        <h3>修改考勤</h3>
+
+        <div class="form-group">
+          <label>状态</label>
+          <select v-model="editData.status" class="input">
+            <option disabled value="">请选择</option>
+            <option v-for="(label, key) in statusOptions" :key="key" :value="key">
+              {{ label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>备注</label>
+          <textarea v-model="editData.remarks" class="input" rows="3"></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn" @click="confirmEdit">保存</button>
+          <button class="btn-cancel" @click="showModal = false">取消</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 
-const courseName = ref('')
-const students = ref([])
+const records = ref([
+  { id: 1, name: '张三', status: 1, statusText: '出勤', statusClass: 'present', remarks: '' },
+  { id: 2, name: '李四', status: 2, statusText: '缺勤', statusClass: 'absent', remarks: '未请假' },
+  { id: 3, name: '王五', status: 3, statusText: '迟到', statusClass: 'late', remarks: '晚到5分钟' }
+])
 
-// 假数据生成器
-const mockStudents = [
-  { id: '2023001', name: '陈同学', score1: 85, score2: 88, score3: 90, total: 88.1 },
-  { id: '2023002', name: '林同学', score1: 90, score2: 92, score3: 95, total: 92.6 },
-  { id: '2023003', name: '张同学', score1: 70, score2: 65, score3: 58, total: 63.7 },
-  { id: '2023004', name: '刘同学', score1: 60, score2: 55, score3: 40, total: 50.5 },
-  { id: '2023005', name: '王同学', score1: 95, score2: 96, score3: 98, total: 96.5 },
-]
+const showModal = ref(false)
+const editData = ref({})
+const statusOptions = { 1: '出勤', 2: '缺勤', 3: '迟到', 4: '请假' }
 
-onMounted(async () => {
-  courseName.value = sessionStorage.getItem('selectedCourseName') || 'Modern Cryptography'
-  const classId = sessionStorage.getItem('selectedClassId')
+const openModify = (record) => {
+  editData.value = { ...record }
+  showModal.value = true
+}
 
-  try {
-    // 尝试从后端获取
-    const res = await fetch(`http://127.0.0.1:8081/teacher/classes/${classId}/gradebook`, {
-      headers: { 'token': localStorage.getItem('token') }
-    })
-    const data = await res.json()
-    if (data.code === 1 && data.data && data.data.students && data.data.students.length > 0) {
-      students.value = data.data.students // 使用真数据
-    } else {
-      students.value = mockStudents // 使用假数据
+const confirmEdit = () => {
+  const idx = records.value.findIndex(r => r.id === editData.value.id)
+  if (idx !== -1) {
+    const label = statusOptions[editData.value.status]
+    const classMap = { 1: 'present', 2: 'absent', 3: 'late', 4: 'leave' }
+    records.value[idx] = {
+      ...editData.value,
+      statusText: label,
+      statusClass: classMap[editData.value.status]
     }
-  } catch (e) {
-    students.value = mockStudents // 出错也用假数据
   }
-})
+  showModal.value = false
+}
 </script>
 
 <style scoped>
-.grades-detail { padding: 24px; }
-.card { background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-.toolbar { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
-.info { margin-left: auto; color: #666; font-size: 14px; }
+.attendance-detail {
+  padding: 24px;
+}
 
-.btn { padding: 8px 16px; border-radius: 4px; cursor: pointer; border: none; font-size: 14px; }
-.btn-primary { background: #2A5CAA; color: white; }
-.btn-outline { background: white; border: 1px solid #ddd; color: #333; }
+.page-header {
+  margin-block-end: 24px;
+}
 
-.data-table { width: 100%; border-collapse: collapse; }
-.data-table th, .data-table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
-.data-table th { background: #f9fafb; font-weight: 600; color: #555; }
-.total { font-weight: bold; color: #2A5CAA; }
+.page-description {
+  color: #666;
+  font-size: 14px;
+}
 
-.tag { padding: 2px 8px; border-radius: 4px; font-size: 12px; }
-.tag.pass { background: #f6ffed; color: #52c41a; }
-.tag.fail { background: #fff2f0; color: #ff4d4f; }
+.card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  margin-block-end: 16px;
+}
+
+.btn {
+  background: #2A5CAA;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.info {
+  color: #666;
+}
+
+.data-table {
+  inline-size: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px;
+  border-block-end: 1px solid #eee;
+  text-align: start;
+}
+
+.status-tag {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.status-tag.present {
+  background: #e6fffb;
+  color: #13c2c2;
+}
+
+.status-tag.absent {
+  background: #fff2f0;
+  color: #ff4d4f;
+}
+
+.status-tag.late {
+  background: #fffbe6;
+  color: #faad14;
+}
+
+.status-tag.leave {
+  background: #f6ffed;
+  color: #52c41a;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #2A5CAA;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  inline-size: 400px;
+}
+
+.modal-actions {
+  margin-block-start: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-cancel {
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+}
+
+.input {
+  inline-size: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  margin-block-start: 6px;
+}
 </style>

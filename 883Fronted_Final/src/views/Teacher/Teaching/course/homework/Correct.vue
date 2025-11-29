@@ -1,286 +1,173 @@
-<!-- src/views/teaching/homework/Correct.vue -->
 <template>
   <div class="homework-correct">
     <div class="page-header">
-      <h1>批改作业</h1>
-      <p class="page-description">批改学生提交的作业，支持AI辅助批改</p>
+      <h1>教学建议</h1>
+      <p class="page-description">AI 辅助生成作业教学建议</p>
     </div>
 
-    <!-- 筛选区域 -->
-    <section class="card filter-card">
-      <div class="filter-form">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="class_id" class="form-label required">班级ID</label>
-            <input
-              id="class_id"
-              v-model="queryForm.class_id"
-              type="text"
-              placeholder="请输入班级ID"
-              class="input"
-            />
-          </div>
-          <div class="form-group">
-            <label for="homework_id" class="form-label required">作业ID</label>
-            <input
-              id="homework_id"
-              v-model="queryForm.homework_id"
-              type="text"
-              placeholder="请输入作业ID"
-              class="input"
-            />
-          </div>
-          <div class="form-actions-inline">
-            <button type="button" class="button" @click="loadSubmissions" :disabled="loading">
-              <span v-if="loading">查询中...</span>
-              <span v-else>查询</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- AI批改区域 -->
-    <section v-if="selectedSubmission" class="card ai-card">
+    <!-- AI 教学建议区域 -->
+    <section class="card ai-card">
       <header class="card-header">
-        <h3>AI辅助批改</h3>
+        <h3>教学建议生成</h3>
       </header>
+
       <div class="ai-section">
-        <div class="ai-placeholder">
-          <p>AI批改功能开发中，敬请期待...</p>
-          <p class="ai-hint">未来将支持自动评分、评语生成等功能</p>
+        <!-- 作业选择 -->
+        <div class="form-group">
+          <label for="homeworkSelect">选择作业</label>
+          <select id="homeworkSelect" v-model="selectedHomework" class="input">
+            <option value="">请选择作业</option>
+            <option v-for="homework in homeworkList" :key="homework.id" :value="homework">
+              {{ homework.title }}
+            </option>
+          </select>
         </div>
-      </div>
-    </section>
 
-    <!-- 提交列表 -->
-    <section v-if="submissions.length > 0" class="card submissions-card">
-      <header class="card-header">
-        <h3>作业提交列表</h3>
-      </header>
-      <div class="submissions-list">
-        <div
-          v-for="submission in submissions"
-          :key="submission.submission_id"
-          class="submission-item"
-          :class="{ active: selectedSubmission?.submission_id === submission.submission_id }"
-          @click="selectSubmission(submission)"
-        >
-          <div class="submission-info">
-            <span class="student-name">{{ submission.student_name }}</span>
-            <span class="submission-time">提交时间：{{ formatTime(submission.submitted_at) }}</span>
-            <span :class="['status-badge', `status-${submission.status}`]">
-              {{ getStatusName(submission.status) }}
-            </span>
-            <span v-if="submission.grade !== null" class="grade-badge">
-              得分：{{ submission.grade }}
-            </span>
+        <!-- 学生选择 -->
+        <div class="form-group">
+          <label>选择学生</label>
+          <div class="students-select">
+            <div v-for="student in studentsList" :key="student.id" class="student-item"
+              :class="{ active: selectedStudents.includes(student) }" @click="toggleStudent(student)">
+              <input type="checkbox" :value="student" v-model="selectedStudents" />
+              <label>{{ student.name }}</label>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
 
-    <!-- 批改表单 -->
-    <section v-if="selectedSubmission" class="card grade-card">
-      <header class="card-header">
-        <div class="card-header__content">
-          <h3>批改作业</h3>
-          <span class="student-info">学生：{{ selectedSubmission.student_name }}</span>
-        </div>
-      </header>
-      <form @submit.prevent="handleGrade" class="grade-form">
-        <div class="form-group">
-          <label for="grade" class="form-label required">作业得分</label>
-          <input
-            id="grade"
-            v-model.number="gradeForm.grade"
-            type="number"
-            placeholder="请输入得分"
-            class="input"
-            :class="{ 'input--error': errors.grade }"
-            min="0"
-            step="0.01"
-          />
+        <!-- 状态提示 -->
+        <div class="selected-info">
+          <p v-if="selectedStudents.length > 0">
+            已选择 {{ selectedStudents.length }} 名学生
+          </p>
+          <p v-else class="text-muted">请选择至少一名学生</p>
         </div>
 
-        <div class="form-group">
-          <label for="teacher_feedback" class="form-label">教师评语</label>
-          <textarea
-            id="teacher_feedback"
-            v-model="gradeForm.teacher_feedback"
-            class="form-textarea"
-            placeholder="请输入评语（可选）"
-            rows="6"
-          ></textarea>
-        </div>
-
+        <!-- 操作按钮 -->
         <div class="form-actions">
-          <button type="submit" class="button" :disabled="grading">
-            <span v-if="grading">保存中...</span>
-            <span v-else>保存批改</span>
+          <button type="button" class="button" @click="generateTeachingSuggestions"
+            :disabled="generatingSuggestions || !selectedHomework || selectedStudents.length === 0">
+            {{ generatingSuggestions ? '生成中...' : '生成教学建议' }}
           </button>
         </div>
-      </form>
-    </section>
 
-    <!-- 空状态 -->
-    <section v-if="!loading && submissions.length === 0 && queryForm.class_id && queryForm.homework_id" class="card empty-card">
-      <div class="empty-state">
-        <p>暂无作业提交</p>
+        <!-- 加载/错误/结果展示 -->
+        <div v-if="generatingSuggestions" class="loading-state">
+          正在生成教学建议，请稍候...
+        </div>
+        <div v-else-if="errorMessage" class="error-state">
+          {{ errorMessage }}
+        </div>
+        <div v-else-if="teachingSuggestions && teachingSuggestions.length > 0" class="suggestions-result">
+          <h4>生成的教学建议</h4>
+          <div class="suggestions-list">
+            <div v-for="(suggestion, index) in teachingSuggestions" :key="index" class="suggestion-item">
+              <h5>{{ suggestion.title }}</h5>
+              <p>{{ suggestion.content }}</p>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 
-defineOptions({
-  name: 'HomeworkCorrect'
-})
+defineOptions({ name: 'HomeworkCorrect' })
 
-const queryForm = reactive({
-  class_id: '',
-  homework_id: ''
-})
+// 模拟作业数据
+const homeworkList = ref([
+  { id: 1, title: '密码学基础作业', description: '完成对称加密与非对称加密原理的作业。' },
+  { id: 2, title: '网络安全防护作业', description: '分析常见网络安全威胁并提出防护措施。' },
+  { id: 3, title: '数据加密技术作业', description: '实现 AES 算法并分析性能特点。' }
+])
 
-const gradeForm = reactive({
-  grade: null,
-  teacher_feedback: null
-})
+// 模拟学生数据
+const studentsList = ref([
+  { id: 1, name: '张三', grade: 85 },
+  { id: 2, name: '李四', grade: 92 },
+  { id: 3, name: '王五', grade: 78 },
+  { id: 4, name: '赵六', grade: 88 },
+  { id: 5, name: '孙七', grade: 95 }
+])
 
-const errors = reactive({})
-const loading = ref(false)
-const grading = ref(false)
-const submissions = ref([])
-const selectedSubmission = ref(null)
+const selectedHomework = ref(null)
+const selectedStudents = ref([])
+const generatingSuggestions = ref(false)
+const teachingSuggestions = ref([])
+const errorMessage = ref('')
+
+// 示例建议（AI 接口出错时显示）
+const exampleSuggestions = [
+  { title: '整体掌握情况', content: '学生对知识点掌握良好，平均分在85分左右。' },
+  { title: '常见错误', content: '部分学生混淆算法原理或应用场景。' },
+  { title: '教学策略', content: '增加算法讲解与实践环节。' },
+  { title: '课堂活动', content: '组织讨论与案例分析。' },
+  { title: '后续作业建议', content: '设计算法实现与安全评估作业。' }
+]
 
 onMounted(() => {
-  const classId = sessionStorage.getItem('selectedClassId')
-  if (classId) {
-    queryForm.class_id = classId
+  if (homeworkList.value.length > 0) {
+    selectedHomework.value = homeworkList.value[0]
   }
 })
 
-const getStatusName = status => {
-  const statusMap = {
-    1: '准时',
-    2: '迟交',
-    3: '未提交'
-  }
-  return statusMap[status] || '未知'
+// 切换学生选中状态
+const toggleStudent = student => {
+  const index = selectedStudents.value.indexOf(student)
+  if (index === -1) selectedStudents.value.push(student)
+  else selectedStudents.value.splice(index, 1)
 }
 
-const formatTime = time => {
-  if (!time) return '-'
-  try {
-    const date = new Date(time)
-    return date.toLocaleString('zh-CN')
-  } catch {
-    return time
-  }
-}
-
-const loadSubmissions = async () => {
-  if (!queryForm.class_id || !queryForm.homework_id) {
-    alert('请填写班级ID和作业ID')
+// 调用 AI 教学建议接口
+const generateTeachingSuggestions = async () => {
+  if (!selectedHomework.value || selectedStudents.value.length === 0) {
+    errorMessage.value = '请选择作业和学生'
     return
   }
 
-  loading.value = true
-  try {
-    const response = await fetch(
-      `http://127.0.0.1:8081/teacher/homeworks/${queryForm.homework_id}/submissions?page=1&pageSize=100`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
-    )
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.msg || `请求失败: ${response.status}`)
-    }
-
-    const result = await response.json()
-
-    if (result.code === 1 && result.data) {
-      submissions.value = result.data.rows || []
-      if (submissions.value.length > 0) {
-        selectSubmission(submissions.value[0])
-      }
-    } else {
-      throw new Error(result.msg || '查询失败')
-    }
-  } catch (error) {
-    console.error('查询作业提交失败:', error)
-    alert(error instanceof Error ? error.message : '查询失败，请稍后重试')
-    submissions.value = []
-  } finally {
-    loading.value = false
-  }
-}
-
-const selectSubmission = submission => {
-  selectedSubmission.value = submission
-  gradeForm.grade = submission.grade
-  gradeForm.teacher_feedback = submission.teacher_feedback
-}
-
-const handleGrade = async () => {
-  if (!selectedSubmission.value) return
-
-  if (gradeForm.grade === null || gradeForm.grade < 0) {
-    errors.grade = '请输入有效的得分'
-    return
-  }
-  delete errors.grade
-
-  grading.value = true
+  generatingSuggestions.value = true
+  errorMessage.value = ''
+  teachingSuggestions.value = []
 
   try {
-    const requestBody = {
-      grade: gradeForm.grade
-    }
-    if (gradeForm.teacher_feedback && gradeForm.teacher_feedback.trim()) {
-      requestBody.teacher_feedback = gradeForm.teacher_feedback.trim()
-    }
-
-    const response = await fetch(
-      `http://127.0.0.1:8081/teacher/submissions/${selectedSubmission.value.submission_id}/grade`,
-      {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestBody)
-      }
-    )
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.msg || `请求失败: ${response.status}`)
-    }
+    const response = await fetch('http://127.0.0.1:8000/api/analyze/teaching', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        homework_title: selectedHomework.value.title,
+        homework_description: selectedHomework.value.description,
+        student_submissions: selectedStudents.value.map(s => ({
+          student_name: s.name,
+          content: `${s.name} 的作业内容`,
+          grade: s.grade
+        }))
+      })
+    })
 
     const result = await response.json()
-
-    if (result.code === 1) {
-      alert('批改成功！')
-      // 更新本地数据
-      if (selectedSubmission.value) {
-        selectedSubmission.value.grade = gradeForm.grade
-        selectedSubmission.value.teacher_feedback = gradeForm.teacher_feedback
+    if (result.success && result.data) {
+      // 后端 AI 返回的数据结构决定这里怎么展示
+      if (Array.isArray(result.data)) {
+        teachingSuggestions.value = result.data
+      } else if (typeof result.data === 'string') {
+        teachingSuggestions.value = [{ title: 'AI 建议', content: result.data }]
+      } else {
+        teachingSuggestions.value = [...exampleSuggestions]
+        errorMessage.value = 'AI 返回数据格式不明，使用示例数据'
       }
     } else {
-      throw new Error(result.msg || '批改失败')
+      teachingSuggestions.value = [...exampleSuggestions]
+      errorMessage.value = 'AI 服务调用失败，显示示例数据'
     }
-  } catch (error) {
-    console.error('批改作业失败:', error)
-    alert(error instanceof Error ? error.message : '批改失败，请稍后重试')
+  } catch (err) {
+    console.error(err)
+    teachingSuggestions.value = [...exampleSuggestions]
+    errorMessage.value = '无法连接 AI 服务，请确认 127.0.0.1:8000 是否运行'
   } finally {
-    grading.value = false
+    generatingSuggestions.value = false
   }
 }
 </script>
@@ -300,86 +187,56 @@ const handleGrade = async () => {
   font-size: 24px;
   font-weight: 600;
   color: #333;
-  margin: 0 0 8px 0;
 }
 
 .page-description {
   color: #666;
   font-size: 14px;
-  margin: 0;
 }
 
-.filter-card,
-.ai-card,
-.submissions-card,
-.grade-card,
-.empty-card {
-  margin-block-start: 24px;
-}
-
+/* 卡片样式 */
 .card {
   background: #fff;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid #e8e8e8;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
 }
 
 .card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   padding: 20px 24px;
   border-block-end: 1px solid #f0f0f0;
 }
 
-.card-header__content {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
 .card-header h3 {
-  margin: 0;
   font-size: 18px;
-  font-weight: 600;
-  color: #333;
+  color: #2A5CAA;
 }
 
+.ai-section {
+  padding: 24px;
+}
+
+/* 输入框与按钮 */
 .input {
   inline-size: 100%;
-  padding: 8px 12px;
+  padding: 10px 12px;
   border: 1px solid #d9d9d9;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 14px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  outline: none;
-}
-
-.input:focus {
-  border-color: #2A5CAA;
-  box-shadow: 0 0 0 2px rgba(42, 92, 170, 0.1);
-}
-
-.input--error {
-  border-color: #ff4d4f;
 }
 
 .button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 16px;
-  border-radius: 4px;
+  background: linear-gradient(135deg, #2A5CAA 0%, #1e40af 100%);
+  color: white;
+  padding: 10px 24px;
+  border-radius: 6px;
   border: none;
-  background: #2A5CAA;
-  color: #fff;
-  font-size: 14px;
   cursor: pointer;
-  transition: background 0.2s ease, opacity 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .button:hover:not(:disabled) {
-  background: #214a88;
+  background: linear-gradient(135deg, #1e40af 0%, #1939b7 100%);
 }
 
 .button:disabled {
@@ -387,192 +244,79 @@ const handleGrade = async () => {
   cursor: not-allowed;
 }
 
-.button--outline {
-  background: #fff;
-  color: #2A5CAA;
-  border: 1px solid #2A5CAA;
-}
-
-.button--small {
-  padding: 4px 10px;
-  font-size: 12px;
-}
-
-.filter-form {
-  padding: 24px;
-}
-
-.form-row {
+/* 学生选择区域 */
+.students-select {
   display: flex;
-  gap: 16px;
-  align-items: flex-end;
   flex-wrap: wrap;
-}
-
-.form-group {
-  flex: 1;
-  min-inline-size: 200px;
-}
-
-.form-label {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: #333;
-  margin-block-end: 8px;
-}
-
-.form-label.required::after {
-  content: ' *';
-  color: #ff4d4f;
-}
-
-.form-actions-inline {
-  display: flex;
   gap: 12px;
-  flex-shrink: 0;
+  margin-block-start: 12px;
 }
 
-.ai-section {
-  padding: 24px;
-}
-
-.ai-placeholder {
-  padding: 60px 20px;
-  text-align: center;
-  background: #f5f7fa;
-  border-radius: 8px;
-  border: 2px dashed #d9d9d9;
-}
-
-.ai-placeholder p {
-  margin: 0 0 8px 0;
-  color: #666;
-  font-size: 16px;
-}
-
-.ai-hint {
-  font-size: 12px;
-  color: #999;
-}
-
-.submissions-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 16px;
-}
-
-.submission-item {
-  padding: 16px;
-  border: 1px solid #e8e8e8;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s;
-  background: #fff;
-}
-
-.submission-item:hover {
-  border-color: #2A5CAA;
-  box-shadow: 0 2px 8px rgba(42, 92, 170, 0.1);
-}
-
-.submission-item.active {
-  border-color: #2A5CAA;
-  background: #f0f7ff;
-}
-
-.submission-info {
+.student-item {
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
-.student-name {
-  font-weight: 600;
-  color: #333;
+.student-item.active {
+  background: #2A5CAA;
+  color: #fff;
 }
 
-.submission-time {
-  font-size: 12px;
-  color: #999;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.status-1 {
+/* 状态提示 */
+.selected-info {
+  margin-block-start: 20px;
+  padding: 12px 16px;
   background: #f6ffed;
-  color: #52c41a;
   border: 1px solid #b7eb8f;
-}
-
-.status-2 {
-  background: #fff2e8;
-  color: #fa8c16;
-  border: 1px solid #ffd591;
-}
-
-.status-3 {
-  background: #fff1f0;
-  color: #ff4d4f;
-  border: 1px solid #ffccc7;
-}
-
-.grade-badge {
-  padding: 2px 8px;
-  background: #e6f7ff;
-  color: #1890ff;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.student-info {
+  border-radius: 6px;
+  color: #52c41a;
   font-size: 14px;
-  color: #666;
-  margin-inline-start: 16px;
 }
 
-.grade-form {
-  padding: 24px;
-}
-
-.form-textarea {
-  inline-size: 100%;
-  padding: 8px 12px;
-  border: 1px solid #d9d9d9;
-  border-radius: 4px;
-  font-size: 14px;
-  font-family: inherit;
-  background-color: #fff;
-  outline: none;
-  transition: all 0.3s;
-  resize: vertical;
-}
-
-.form-textarea:focus {
-  border-color: #2A5CAA;
-  box-shadow: 0 0 0 2px rgba(42, 92, 170, 0.1);
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-block-start: 24px;
-}
-
-.empty-state {
-  padding: 48px;
-  text-align: center;
+.text-muted {
   color: #999;
-  font-size: 16px;
+}
+
+/* 加载与错误 */
+.loading-state,
+.error-state {
+  margin-block-start: 20px;
+  padding: 20px;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.error-state {
+  background: #fff2f0;
+  border: 1px solid #ffccc7;
+  color: #cf1322;
+}
+
+/* 建议显示区域 */
+.suggestions-result {
+  margin-block-start: 24px;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.suggestion-item {
+  padding: 16px;
+  border-inline-start: 4px solid #2A5CAA;
+  border-radius: 6px;
+  background: #f9fafb;
+  margin-block-end: 16px;
+}
+
+.suggestion-item h5 {
+  color: #2A5CAA;
+  margin-block-end: 8px;
 }
 </style>

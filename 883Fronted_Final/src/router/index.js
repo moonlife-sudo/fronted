@@ -221,23 +221,33 @@ const routes = [
       },
       // 考勤
       {
-        path: "course/:courseId/attendance/launch",
-        component: () =>
-          import("../views/Teacher/Teaching/course/attendance/Launch.vue"),
-        meta: { showSidebar: true, title: "发起签到" },
+        path: "course/:courseId/attendance",
+        meta: { showSidebar: true },
+        children: [
+          {
+            path: "launch",
+            name: "AttendanceLaunch",
+            component: () =>
+              import("../views/Teacher/Teaching/course/attendance/Launch.vue"),
+            meta: { title: "发起签到" },
+          },
+          {
+            path: "detail",
+            name: "AttendanceDetail",
+            component: () =>
+              import("../views/Teacher/Teaching/course/attendance/Detail.vue"),
+            meta: { title: "考勤详情" },
+          },
+          {
+            path: "modify",
+            name: "AttendanceModify",
+            component: () =>
+              import("../views/Teacher/Teaching/course/attendance/Modify.vue"),
+            meta: { title: "修改考勤" },
+          },
+        ],
       },
-      {
-        path: "course/:courseId/attendance/detail",
-        component: () =>
-          import("../views/Teacher/Teaching/course/attendance/Detail.vue"),
-        meta: { showSidebar: true, title: "考勤详情" },
-      },
-      {
-        path: "course/:courseId/attendance/modify",
-        component: () =>
-          import("../views/Teacher/Teaching/course/attendance/Modify.vue"),
-        meta: { showSidebar: true, title: "修改考勤" },
-      },
+
       // 作业
       {
         path: "course/:courseId/homework/publish",
