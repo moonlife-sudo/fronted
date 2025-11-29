@@ -100,23 +100,24 @@ export default {
                         token
                     }))
 
-                    // 根据roles判断角色并跳转
-                    // roles是数组，如: ['student'], ['teacher'], ['admin'] 或 ['teacher', 'resource_admin']
-                    const roleKeys = roles || []
-                    let redirectPath = '/student/home' // 默认跳转到学生首页
+                  // 根据roles判断角色并跳转
+                  const roleKeys = roles || []
+                  console.log('当前用户角色:', roleKeys) // 建议加上这行日志，方便按F12看看到底返回了啥
 
-                    // 检查是否有admin角色（管理员）
-                    if (roleKeys.includes('admin') || roleKeys.some(r => r.includes('admin'))) {
-                        redirectPath = '/admin/home'
-                    } 
-                    // 检查是否有teacher角色（教师）
-                    else if (roleKeys.includes('teacher')) {
-                        redirectPath = '/teacher/home'
-                    }
-                    // 默认为学生
-                    else {
-                        redirectPath = '/student/home'
-                    }
+                  let redirectPath = '/student/home' // 默认跳转
+
+                  // 1. 优先精确匹配 admin
+                  if (roleKeys.includes('admin')) {
+                    redirectPath = '/admin/home'
+                  }
+                  // 2. 其次匹配 teacher
+                  else if (roleKeys.includes('teacher')) {
+                    redirectPath = '/teacher/home'
+                  }
+                  // 3. 其他情况（包括 student）都去学生首页
+                  else {
+                    redirectPath = '/student/home'
+                  }
 
                     router.push(redirectPath)
                 } else {

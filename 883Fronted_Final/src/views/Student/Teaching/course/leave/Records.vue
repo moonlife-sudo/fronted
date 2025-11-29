@@ -1,126 +1,100 @@
 <template>
-    <div class="leave-records-page">
-        <div class="page-header">
-            <h2>我的请假记录</h2>
-            <button v-if="isCourseContext" class="apply-btn" @click="$router.push('apply')">
-                + 发起申请
-            </button>
-        </div>
-
-        <div class="card">
-            <table class="records-table">
-                <thead>
-                    <tr>
-                        <th>申请时间</th>
-                        <th>类型</th>
-                        <th>请假原因</th>
-                        <th>状态</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="item in list" :key="item.id">
-                        <td>{{ item.date }}</td>
-                        <td>{{ item.type }}</td>
-                        <td class="reason">{{ item.reason }}</td>
-                        <td>
-                            <span :class="['status-badge', item.status]">{{ item.statusText }}</span>
-                        </td>
-                    </tr>
-                    <tr v-if="list.length === 0">
-                        <td colspan="4" class="empty">暂无请假记录</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+  <div class="leave-records-page">
+    <div class="page-header">
+      <h2>我的请假记录</h2>
+      <button class="apply-btn" @click="$router.push('apply')">
+        <i class="bi bi-plus-lg"></i> 发起申请
+      </button>
     </div>
+
+    <div class="records-container">
+      <div v-for="item in list" :key="item.id" class="record-card">
+        <div class="card-left">
+          <div class="date-box">
+            <span class="month">{{ item.month }}月</span>
+            <span class="day">{{ item.day }}</span>
+          </div>
+          <div class="info">
+            <div class="type-tag" :class="item.typeClass">{{ item.type }}</div>
+            <p class="reason">{{ item.reason }}</p>
+            <p class="duration">共 {{ item.duration }} 天</p>
+          </div>
+        </div>
+        <div class="card-right">
+          <span :class="['status-badge', item.status]">{{ item.statusText }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
-
-const route = useRoute()
-const isCourseContext = computed(() => !!route.params.courseId)
+import { ref } from 'vue'
 
 const list = ref([
-    { id: 1, date: '2023-11-20', type: '病假', reason: '发烧去医院', status: 'approved', statusText: '已通过' },
-    { id: 2, date: '2023-11-10', type: '事假', reason: '家中急事', status: 'rejected', statusText: '已驳回' }
+  {
+    id: 1, month: '11', day: '20',
+    type: '病假', typeClass: 'sick',
+    reason: '突发高烧，去校医院就诊',
+    duration: 1,
+    status: 'approved', statusText: '已通过'
+  },
+  {
+    id: 2, month: '10', day: '15',
+    type: '事假', typeClass: 'personal',
+    reason: '家里有急事需回家处理',
+    duration: 2,
+    status: 'rejected', statusText: '已驳回'
+  },
+  {
+    id: 3, month: '09', day: '28',
+    type: '事假', typeClass: 'personal',
+    reason: '参加学术会议',
+    duration: 3,
+    status: 'approved', statusText: '已通过'
+  }
 ])
 </script>
 
 <style scoped>
-.leave-records-page {
-    padding: 24px;
-}
-
-.page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-block-end: 20px;
-}
-
-.page-header h2 {
-    margin: 0;
-    font-size: 20px;
-    color: #333;
-}
+.leave-records-page { padding: 24px; max-width: 800px; margin: 0 auto; }
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+.page-header h2 { margin: 0; font-size: 22px; color: #333; }
 
 .apply-btn {
-    background: #2A5CAA;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
+  background: #2A5CAA; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;
+  font-weight: 500; display: flex; align-items: center; gap: 5px; box-shadow: 0 4px 10px rgba(42, 92, 170, 0.2);
 }
+.apply-btn:hover { background: #1e4b8b; }
 
-.card {
-    background: white;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
+.records-container { display: flex; flex-direction: column; gap: 15px; }
 
-.records-table {
-    inline-size: 100%;
-    border-collapse: collapse;
+.record-card {
+  background: white; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between;
+  align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; transition: transform 0.2s;
 }
+.record-card:hover { transform: scale(1.01); }
 
-.records-table th {
-    text-align: start;
-    padding: 12px;
-    background: #f9f9f9;
-    color: #666;
-    font-size: 14px;
-}
+.card-left { display: flex; gap: 20px; align-items: center; }
 
-.records-table td {
-    padding: 12px;
-    border-block-end: 1px solid #eee;
-    color: #333;
-    font-size: 14px;
+.date-box {
+  background: #f8f9fa; padding: 10px; border-radius: 8px; text-align: center; min-width: 60px;
+  border: 1px solid #eee;
 }
+.date-box .month { display: block; font-size: 12px; color: #999; }
+.date-box .day { display: block; font-size: 20px; font-weight: bold; color: #333; }
 
-.status-badge {
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 12px;
+.info { display: flex; flex-direction: column; gap: 5px; }
+.type-tag {
+  font-size: 12px; padding: 2px 8px; border-radius: 4px; display: inline-block; width: fit-content;
 }
+.type-tag.sick { background: #fff1f0; color: #ff4d4f; border: 1px solid #ffa39e; }
+.type-tag.personal { background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; }
 
-.status-badge.approved {
-    background: #f6ffed;
-    color: #52c41a;
-}
+.reason { margin: 0; font-size: 15px; font-weight: 500; color: #333; }
+.duration { margin: 0; font-size: 12px; color: #999; }
 
-.status-badge.rejected {
-    background: #fff1f0;
-    color: #ff4d4f;
-}
-
-.empty {
-    text-align: center;
-    color: #999;
-    padding: 20px;
-}
+.status-badge { padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; }
+.status-badge.approved { background: #f6ffed; color: #52c41a; }
+.status-badge.rejected { background: #fff2e8; color: #fa8c16; }
 </style>
