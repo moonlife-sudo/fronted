@@ -5,7 +5,7 @@
         <div class="avatar-container">
           <img 
             loading="lazy" 
-            src="https://placeholder.pics/svg/150x150/DEDEDE/555555/用户头像" 
+            :src="getAvatarImage()" 
             alt="用户头像" 
             class="avatar"
           >
@@ -323,6 +323,30 @@ export default {
     }
   },
   methods: {
+    // 获取头像图片
+    getAvatarImage() {
+      // 根据用户角色获取对应头像
+      const savedUser = localStorage.getItem('userInfo')
+      if (savedUser) {
+        try {
+          const userInfo = JSON.parse(savedUser)
+          const roles = userInfo.roles || []
+          
+          if (roles.includes('super_admin') || roles.includes('admin') || roles.includes('administrator')) {
+            return require('@/assets/images/avatar-admin.svg')
+          } else if (roles.includes('teacher') || roles.includes('教师') || roles.includes('instructor')) {
+            return require('@/assets/images/avatar-teacher.svg')
+          } else {
+            return require('@/assets/images/avatar-student.svg')
+          }
+        } catch (e) {
+          return require('@/assets/images/avatar-teacher.svg')
+        }
+      }
+      
+      // 默认返回教师头像
+      return require('@/assets/images/avatar-teacher.svg')
+    },
     switchSection(sectionId) {
       this.activeSection = sectionId
     },

@@ -88,17 +88,22 @@ export default {
                 })
 
                 if (result.code === 1 && result.data) {
-                    const { token, user_id, username, full_name, roles } = result.data
+                    // 后端返回的字段名是camelCase
+                    const { token, userId, username, fullName, roles } = result.data
+
+                    console.log('🔍 登录成功，后端返回的数据:', result.data)
 
                     // 保存token和用户信息
                     localStorage.setItem('token', token)
-                    localStorage.setItem('userInfo', JSON.stringify({
-                        user_id,
+                    const userInfoToSave = {
+                        user_id: userId,           // 转换字段名
                         username,
-                        full_name,
+                        full_name: fullName,       // 转换字段名
                         roles,
                         token
-                    }))
+                    }
+                    console.log('💾 保存到localStorage的用户信息:', userInfoToSave)
+                    localStorage.setItem('userInfo', JSON.stringify(userInfoToSave))
 
                   // 根据roles判断角色并跳转
                   const roleKeys = roles || []
@@ -107,7 +112,7 @@ export default {
                   let redirectPath = '/student/home' // 默认跳转
 
                   // 1. 优先精确匹配 admin
-                  if (roleKeys.includes('admin')) {
+                  if (roleKeys.includes('super_admin')) {
                     redirectPath = '/admin/home'
                   }
                   // 2. 其次匹配 teacher

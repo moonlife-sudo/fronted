@@ -16,30 +16,27 @@
       <div v-else-if="components.length > 0" class="components-table-wrapper">
         <table class="components-table">
           <thead>
-          <tr>
-            <th>成绩项名称</th>
-            <th>权重</th>
-            <th>满分</th>
-            <th>操作</th>
-          </tr>
+            <tr>
+              <th>成绩项名称</th>
+              <th>权重</th>
+              <th>满分</th>
+              <th>操作</th>
+            </tr>
           </thead>
           <tbody>
-          <tr v-for="component in components" :key="component.component_id">
-            <td>{{ component.component_name }}</td>
-            <td>{{ (component.weight * 100).toFixed(0) }}%</td>
-            <td>{{ component.max_score }}</td>
-            <td>
-              <button type="button" class="button button--outline button--small" @click="editComponent(component)">修改</button>
-              <button
-                  type="button"
-                  class="button button--outline button--small button-danger"
-                  style="margin-inline-start: 8px;"
-                  @click="deleteComponent(component.component_id)"
-              >
-                删除
-              </button>
-            </td>
-          </tr>
+            <tr v-for="component in components" :key="component.component_id">
+              <td>{{ component.component_name }}</td>
+              <td>{{ (component.weight * 100).toFixed(0) }}%</td>
+              <td>{{ component.max_score }}</td>
+              <td>
+                <button type="button" class="button button--outline button--small"
+                  @click="editComponent(component)">修改</button>
+                <button type="button" class="button button--outline button--small button-danger"
+                  style="margin-inline-start: 8px;" @click="deleteComponent(component.component_id)">
+                  删除
+                </button>
+              </td>
+            </tr>
           </tbody>
         </table>
         <div class="total-weight-info">总权重: {{ totalWeight }}%</div>
@@ -63,11 +60,13 @@
           </div>
           <div class="form-group">
             <label for="weight" class="form-label required">权重</label>
-            <input v-model.number="formData.weight" type="number" placeholder="如：0.3（表示30%）" class="input" min="0" max="1" step="0.01" required />
+            <input v-model.number="formData.weight" type="number" placeholder="如：0.3（表示30%）" class="input" min="0"
+              max="1" step="0.01" required />
           </div>
           <div class="form-group">
             <label for="max_score" class="form-label required">满分</label>
-            <input v-model.number="formData.max_score" type="number" placeholder="如：100" class="input" min="0" step="1" required />
+            <input v-model.number="formData.max_score" type="number" placeholder="如：100" class="input" min="0" step="1"
+              required />
           </div>
           <div class="modal-actions">
             <button type="button" class="button button--secondary" @click="closeModal">取消</button>
@@ -217,34 +216,199 @@ const closeModal = () => {
 
 <style scoped>
 /* 样式复用自上一个回复 */
-.page-header { margin-block-end: 24px; }
-.page-header h1 { font-size: 24px; font-weight: 600; color: #333; margin: 0 0 8px 0; }
-.page-header p { color: #666; font-size: 14px; margin: 0; }
-.components-card { margin-block-start: 24px; background: #fff; border-radius: 8px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05); }
-.card-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-block-end: 1px solid #f0f0f0; }
-.card-header h3 { margin: 0; font-size: 18px; font-weight: 600; color: #333; }
-.button { padding: 8px 16px; border-radius: 4px; border: none; background: #2A5CAA; color: #fff; font-size: 14px; cursor: pointer; }
-.button:hover { background: #214a88; }
-.button--outline { background: white; color: #2A5CAA; border: 1px solid #2A5CAA; }
-.button--small { padding: 4px 10px; font-size: 12px; }
-.button-danger { color: #ff4d4f; border: 1px solid #ffccc7; }
-.button-danger:hover { background: #fff1f0; }
-.button--secondary { background: #f5f5f5; color: #333; border: 1px solid #d9d9d9; }
-.components-table-wrapper { overflow-x: auto; padding: 16px; }
-.components-table { inline-size: 100%; border-collapse: collapse; font-size: 14px; }
-.components-table th, .components-table td { padding: 12px; text-align: start; border-block-end: 1px solid #e8e8e8; }
-.components-table th { background: #fafafa; font-weight: 600; color: #333; }
-.total-weight-info { padding: 12px 24px; font-weight: bold; background: #f0f7ff; border-block-start: 1px solid #d6e4ff; }
-.modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-.modal-content { background: #fff; border-radius: 8px; inline-size: 90%; max-inline-size: 500px; max-block-size: 90vh; overflow-y: auto; }
-.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-block-end: 1px solid #e8e8e8; }
-.modal-header h3 { margin: 0; font-size: 18px; font-weight: 600; color: #333; }
-.modal-close { background: none; border: none; font-size: 24px; color: #999; cursor: pointer; }
-.modal-form { padding: 20px; }
-.input { inline-size: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px; }
-.form-group { margin-block-end: 20px; }
-.form-label { display: block; font-size: 14px; font-weight: 500; color: #333; margin-block-end: 8px; }
-.form-label.required::after { content: ' *'; color: #ff4d4f; }
-.modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-block-start: 24px; }
-.empty-state, .loading-state { padding: 48px; text-align: center; color: #999; font-size: 16px; }
+.page-header {
+  margin-block-end: 24px;
+}
+
+.page-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 8px 0;
+}
+
+.page-header p {
+  color: #666;
+  font-size: 14px;
+  margin: 0;
+}
+
+.components-card {
+  margin-block-start: 24px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-block-end: 1px solid #f0f0f0;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  background: #2A5CAA;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: #214a88;
+}
+
+.button--outline {
+  background: white;
+  color: #2A5CAA;
+  border: 1px solid #2A5CAA;
+}
+
+.button--small {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.button-danger {
+  color: #ff4d4f;
+  border: 1px solid #ffccc7;
+}
+
+.button-danger:hover {
+  background: #fff1f0;
+}
+
+.button--secondary {
+  background: #f5f5f5;
+  color: #333;
+  border: 1px solid #d9d9d9;
+}
+
+.components-table-wrapper {
+  overflow-x: auto;
+  padding: 16px;
+}
+
+.components-table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.components-table th,
+.components-table td {
+  padding: 12px;
+  text-align: start;
+  border-block-end: 1px solid #e8e8e8;
+}
+
+.components-table th {
+  background: #fafafa;
+  font-weight: 600;
+  color: #333;
+}
+
+.total-weight-info {
+  padding: 12px 24px;
+  font-weight: bold;
+  background: #f0f7ff;
+  border-block-start: 1px solid #d6e4ff;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 8px;
+  inline-size: 90%;
+  max-inline-size: 500px;
+  max-block-size: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-block-end: 1px solid #e8e8e8;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #999;
+  cursor: pointer;
+}
+
+.modal-form {
+  padding: 20px;
+}
+
+.input {
+  inline-size: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form-group {
+  margin-block-end: 20px;
+}
+
+.form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  margin-block-end: 8px;
+}
+
+.form-label.required::after {
+  content: ' *';
+  color: #ff4d4f;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-block-start: 24px;
+}
+
+.empty-state,
+.loading-state {
+  padding: 48px;
+  text-align: center;
+  color: #999;
+  font-size: 16px;
+}
 </style>

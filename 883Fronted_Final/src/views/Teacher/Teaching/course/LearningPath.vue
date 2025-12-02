@@ -28,24 +28,24 @@
             </div>
         </div>
 
-            <div class="timeline-wrapper">
-                <div v-for="(chapter, index) in chapters" :key="index" class="chapter-node">
-                    <div class="node-line"></div>
-                    <div class="node-content">
-                        <div class="node-header">
-                            <span class="chapter-index">Chapter {{ index + 1 }}</span>
-                            <span class="status-badge" :class="chapter.status">{{ chapter.statusText }}</span>
-                        </div>
-                        <h3>{{ chapter.title }}</h3>
-                        <p class="desc">{{ chapter.description }}</p>
+        <div class="timeline-wrapper">
+            <div v-for="(chapter, index) in chapters" :key="index" class="chapter-node">
+                <div class="node-line"></div>
+                <div class="node-content">
+                    <div class="node-header">
+                        <span class="chapter-index">Chapter {{ index + 1 }}</span>
+                        <span class="status-badge" :class="chapter.status">{{ chapter.statusText }}</span>
+                    </div>
+                    <h3>{{ chapter.title }}</h3>
+                    <p class="desc">{{ chapter.description }}</p>
 
-                        <div class="resources-tags">
-                            <span v-for="res in chapter.resources" :key="res" class="tag">{{ res }}</span>
-                        </div>
+                    <div class="resources-tags">
+                        <span v-for="res in chapter.resources" :key="res" class="tag">{{ res }}</span>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 </template>
 
 <script setup>

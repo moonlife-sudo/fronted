@@ -18,18 +18,10 @@
         <div class="form-group">
           <label>签到类型</label>
           <div class="type-selector">
-            <div
-                class="type-card"
-                :class="{ active: formData.session_type === 1 }"
-                @click="formData.session_type = 1"
-            >
+            <div class="type-card" :class="{ active: formData.session_type === 1 }" @click="formData.session_type = 1">
               <i class="bi bi-person-bounding-box"></i> 普通签到
             </div>
-            <div
-                class="type-card"
-                :class="{ active: formData.session_type === 2 }"
-                @click="formData.session_type = 2"
-            >
+            <div class="type-card" :class="{ active: formData.session_type === 2 }" @click="formData.session_type = 2">
               <i class="bi bi-geo-alt-fill"></i> 位置签到
             </div>
           </div>
@@ -38,9 +30,8 @@
         <div class="form-group">
           <label>签到时长</label>
           <div class="duration-options">
-            <span v-for="t in [5, 10, 15, 30]" :key="t"
-                  class="tag" :class="{ active: formData.duration === t }"
-                  @click="formData.duration = t">{{ t }}分钟</span>
+            <span v-for="t in [5, 10, 15, 30]" :key="t" class="tag" :class="{ active: formData.duration === t }"
+              @click="formData.duration = t">{{ t }}分钟</span>
           </div>
         </div>
 
@@ -84,13 +75,7 @@
           <span class="close" @click="showMap = false">×</span>
         </div>
         <div class="map-body">
-          <iframe
-              id="mapPage"
-              width="100%"
-              height="100%"
-              frameborder="0"
-              :src="mapUrl"
-          ></iframe>
+          <iframe id="mapPage" width="100%" height="100%" frameborder="0" :src="mapUrl"></iframe>
         </div>
         <div class="map-footer">
           <p class="tip">提示：在地图上找到教室位置后，点击下方确认 (演示模式)</p>
@@ -166,35 +151,225 @@ const handleSubmit = async () => {
 
 <style scoped>
 /* 样式保持不变，直接复用上一次的 */
-.attendance-launch { padding: 24px; max-inline-size: 800px; margin: 0 auto; }
-.page-header h1 { color: #333; margin-block-end: 5px; }
-.form-card { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-.form-group { margin-block-end: 25px; }
-.form-group label { display: block; font-weight: 600; margin-block-end: 10px; color: #444; }
-.course-badge { background: #f0f7ff; border: 1px solid #2A5CAA; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; color: #2A5CAA; }
-.course-name { font-weight: bold; font-size: 16px; }
-.course-id { font-size: 13px; opacity: 0.8; }
-.type-selector { display: flex; gap: 20px; }
-.type-card { flex: 1; border: 2px solid #eee; padding: 20px; border-radius: 10px; text-align: center; cursor: pointer; transition: all 0.3s; }
-.type-card:hover { border-color: #b3c7f9; }
-.type-card.active { border-color: #2A5CAA; background: #eef2ff; color: #2A5CAA; font-weight: bold; }
-.type-card i { font-size: 24px; display: block; margin-block-end: 8px; }
-.duration-options { display: flex; gap: 10px; }
-.tag { padding: 8px 16px; background: #f5f5f5; border-radius: 20px; cursor: pointer; transition: all 0.2s; }
-.tag.active { background: #2A5CAA; color: white; }
-.location-box { background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px dashed #ccc; }
-.btn-map { inline-size: 100%; padding: 15px; background: white; border: 1px solid #2A5CAA; color: #2A5CAA; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
-.location-result { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px; border-radius: 8px; }
-.res-item { font-size: 13px; color: #555; margin-block-end: 4px; }
-.btn-reselect { background: none; border: none; color: #2A5CAA; cursor: pointer; text-decoration: underline; }
-.button-submit { inline-size: 100%; padding: 14px; background: #2A5CAA; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-block-start: 20px; }
-.button-submit:hover:not(:disabled) { background: #1e4b8b; }
-.button-submit:disabled { background: #ccc; }
-.map-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-.map-modal { background: white; inline-size: 90%; max-inline-size: 700px; block-size: 80vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
-.map-header { padding: 15px; display: flex; justify-content: space-between; border-block-end: 1px solid #eee; background: #f5f5f5; }
-.map-header .close { font-size: 24px; cursor: pointer; }
-.map-body { flex: 1; position: relative; }
-.map-footer { padding: 15px; text-align: center; background: #fff; border-block-start: 1px solid #eee; }
-.button-confirm { background: #2A5CAA; color: white; border: none; padding: 10px 40px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+.attendance-launch {
+  padding: 24px;
+  max-inline-size: 800px;
+  margin: 0 auto;
+}
+
+.page-header h1 {
+  color: #333;
+  margin-block-end: 5px;
+}
+
+.form-card {
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.form-group {
+  margin-block-end: 25px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  margin-block-end: 10px;
+  color: #444;
+}
+
+.course-badge {
+  background: #f0f7ff;
+  border: 1px solid #2A5CAA;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #2A5CAA;
+}
+
+.course-name {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.course-id {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.type-selector {
+  display: flex;
+  gap: 20px;
+}
+
+.type-card {
+  flex: 1;
+  border: 2px solid #eee;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.type-card:hover {
+  border-color: #b3c7f9;
+}
+
+.type-card.active {
+  border-color: #2A5CAA;
+  background: #eef2ff;
+  color: #2A5CAA;
+  font-weight: bold;
+}
+
+.type-card i {
+  font-size: 24px;
+  display: block;
+  margin-block-end: 8px;
+}
+
+.duration-options {
+  display: flex;
+  gap: 10px;
+}
+
+.tag {
+  padding: 8px 16px;
+  background: #f5f5f5;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tag.active {
+  background: #2A5CAA;
+  color: white;
+}
+
+.location-box {
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px dashed #ccc;
+}
+
+.btn-map {
+  inline-size: 100%;
+  padding: 15px;
+  background: white;
+  border: 1px solid #2A5CAA;
+  color: #2A5CAA;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.location-result {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.res-item {
+  font-size: 13px;
+  color: #555;
+  margin-block-end: 4px;
+}
+
+.btn-reselect {
+  background: none;
+  border: none;
+  color: #2A5CAA;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.button-submit {
+  inline-size: 100%;
+  padding: 14px;
+  background: #2A5CAA;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-block-start: 20px;
+}
+
+.button-submit:hover:not(:disabled) {
+  background: #1e4b8b;
+}
+
+.button-submit:disabled {
+  background: #ccc;
+}
+
+.map-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.map-modal {
+  background: white;
+  inline-size: 90%;
+  max-inline-size: 700px;
+  block-size: 80vh;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.map-header {
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  border-block-end: 1px solid #eee;
+  background: #f5f5f5;
+}
+
+.map-header .close {
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.map-body {
+  flex: 1;
+  position: relative;
+}
+
+.map-footer {
+  padding: 15px;
+  text-align: center;
+  background: #fff;
+  border-block-start: 1px solid #eee;
+}
+
+.button-confirm {
+  background: #2A5CAA;
+  color: white;
+  border: none;
+  padding: 10px 40px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+}
 </style>

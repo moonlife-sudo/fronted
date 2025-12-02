@@ -5,7 +5,7 @@
           <div class="avatar-container">
           <img 
             loading="lazy" 
-            :src="userInfo.avatar_url || 'https://placeholder.pics/svg/150x150/DEDEDE/555555/用户头像'" 
+            :src="getAvatarImage()" 
             alt="用户头像" 
             class="avatar"
           >
@@ -13,7 +13,7 @@
             <i class="bi bi-camera-fill"></i>
           </button>
         </div>
-        <h3 class="username">{{ userInfo.full_name || '加载中...' }}</h3>
+        <h3 class="username">{{ userInfo.full_name || userInfo.username || userInfo.name || '加载中...' }}</h3>
         <p class="user-role">{{ userInfo.role }}</p>
       </div>
       
@@ -48,7 +48,8 @@
             <input 
               type="text" 
               id="name" 
-              v-model="userInfo.full_name" 
+              :value="userInfo.full_name || userInfo.username"
+              @input="userInfo.full_name = $event.target.value"
               :readonly="!isEditing"
             >
           </div>
@@ -108,7 +109,9 @@
             <input 
               type="tel" 
               id="phone" 
-              v-model="userInfo.phone_number" 
+              :value="userInfo.phone_number || ''"
+              @input="userInfo.phone_number = $event.target.value"
+              :placeholder="!userInfo.phone_number ? '未填写' : ''"
               :readonly="!isEditing"
             >
           </div>
@@ -373,6 +376,29 @@ export default {
     }
   },
   methods: {
+    // 获取头像图片
+    getAvatarImage() {
+      // 根据用户角色获取对应头像
+      const savedUser = localStorage.getItem('userInfo')
+      if (savedUser) {
+        try {
+          const userInfo = JSON.parse(savedUser)
+          const roles = userInfo.roles || []
+          
+          if (roles.includes('super_admin') || roles.includes('admin') || roles.includes('administrator')) {
+            return require('@/assets/images/avatar-admin.svg')
+          } else if (roles.includes('teacher') || roles.includes('教师') || roles.includes('instructor')) {
+            return require('@/assets/images/avatar-teacher.svg')
+          } else {
+            return require('@/assets/images/student_icon.png')
+          }
+        } catch (e) {
+          return require('@/assets/images/avatar-student.svg')
+        }
+      }
+      
+      return require('@/assets/images/avatar-student.svg')
+    },
     switchSection(sectionId) {
       this.activeSection = sectionId
     },
@@ -482,17 +508,21 @@ export default {
       try {
         // 检查token是否存在
         const token = localStorage.getItem('token')
+        console.log('Profile页面 - Token检查:', token ? `${token.substring(0, 20)}...` : '未找到token')
+        
         if (!token) {
           alert('未登录，请先登录')
           this.$router.push('/login')
           return
         }
         
+        console.log('Profile页面 - 准备调用getProfile API')
         const result = await getProfile()
+        console.log('Profile页面 - API响应:', result)
         if (result.code === 1 && result.data) {
           const data = result.data
           this.userInfo = {
-            full_name: data.full_name || '',
+            full_name: data.full_name || data.name || '',
             username: data.username || '',
             student_id_number: data.profile?.student_id_number || '',
             email: data.email || '',
@@ -510,6 +540,35 @@ export default {
         }
       } catch (error) {
         console.error('加载用户信息失败:', error)
+        
+        // 如果是401错误，尝试使用localStorage的用户信息作为fallback
+        if (error.response && error.response.status === 401) {
+          console.log('API返回401，尝试使用localStorage数据')
+          const storedUserInfo = localStorage.getItem('userInfo')
+          if (storedUserInfo) {
+            try {
+              const userData = JSON.parse(storedUserInfo)
+              this.userInfo = {
+                full_name: userData.full_name || userData.name || '用户',
+                username: userData.username || '',
+                student_id_number: userData.student_id_number || '',
+                email: userData.email || '',
+                phone_number: userData.phone_number || '',
+                avatar_url: userData.avatar_url || '',
+                major: userData.major || '',
+                class_name: userData.class_name || '',
+                grade: userData.grade || '',
+                role: '学生'
+              }
+              this.originalUserInfo = JSON.parse(JSON.stringify(this.userInfo))
+              console.log('使用localStorage数据成功')
+              return
+            } catch (parseError) {
+              console.error('解析localStorage用户数据失败:', parseError)
+            }
+          }
+        }
+        
         if (error.message && error.message.includes('未登录')) {
           alert('登录已过期，请重新登录')
           this.$router.push('/login')

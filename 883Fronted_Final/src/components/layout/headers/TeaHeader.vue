@@ -23,15 +23,13 @@
 
         <div class="user-avatar-container" ref="avatarRef" @click="toggleUserMenu">
           <div class="user-avatar">
-            <img v-if="hasAvatar" src="https://placeholder.pics/svg/150x150/DEDEDE/555555/教师头像" alt="用户头像"
-              class="avatar-img">
-            <div v-else class="avatar-placeholder">{{ userInfo.name ? userInfo.name[0] : 'T' }}</div>
+            <img :src="getAvatarImage()" alt="用户头像" class="avatar-img">
           </div>
 
           <div v-if="showUserMenu" class="user-dropdown">
             <div class="user-info-header">
-              <p class="name">{{ userInfo.name || '教师' }}</p>
-              <p class="role">教师</p>
+              <p class="name">{{ getUserDisplayName() }}</p>
+              <p class="role">{{ getRoleDisplayName() }}</p>
             </div>
             <ul class="dropdown-list">
               <li @click="goToProfile">
@@ -73,10 +71,59 @@ export default {
     const showUserMenu = ref(false)
     const avatarRef = ref(null)
 
+    // 获取头像图片
+    const getAvatarImage = () => {
+      const role = getRoleDisplayName()
+      if (role === '管理员') {
+        return require('@/assets/images/avatar-admin.svg')
+      } else if (role === '教师') {
+        return require('@/assets/images/avatar-teacher.svg')
+      } else {
+        return require('@/assets/images/avatar-student.svg')
+      }
+    }
+
+    // 获取用户显示名称
+    const getUserDisplayName = () => {
+      console.log('教师端Header - 当前用户信息:', userInfo.value)
+      return userInfo.value.full_name || userInfo.value.name || userInfo.value.username || '教师'
+    }
+
+    // 获取角色显示名称
+    const getRoleDisplayName = () => {
+      if (userInfo.value.roles && Array.isArray(userInfo.value.roles)) {
+        const roles = userInfo.value.roles
+        if (roles.includes('super_admin') || roles.includes('admin') || roles.includes('administrator') || roles.includes('管理员')) {
+          return '管理员'
+        } else if (roles.includes('teacher') || roles.includes('教师') || roles.includes('instructor')) {
+          return '教师'
+        } else if (roles.includes('student') || roles.includes('学生')) {
+          return '学生'
+        } else {
+          return '教师' // 默认为教师
+        }
+      }
+      // 根据用户名判断（兜底逻辑）
+      if (userInfo.value.username === 'admin') {
+        return '管理员'
+      } else if (userInfo.value.username && userInfo.value.username.startsWith('T')) {
+        return '教师'
+      } else {
+        return '学生'
+      }
+    }
+
     onMounted(() => {
       const savedUser = localStorage.getItem('userInfo')
+      console.log('教师端Header - localStorage中的userInfo:', savedUser)
       if (savedUser) {
-        try { userInfo.value = JSON.parse(savedUser) } catch (e) { }
+        try { 
+          const parsedUser = JSON.parse(savedUser)
+          console.log('教师端Header - 解析后的用户信息:', parsedUser)
+          userInfo.value = parsedUser
+        } catch (e) { 
+          console.error('教师端Header - 解析userInfo失败:', e)
+        }
       }
       document.addEventListener('click', handleClickOutside)
     })
@@ -116,7 +163,10 @@ export default {
       avatarRef,
       toggleUserMenu,
       goToProfile,
-      handleLogout
+      handleLogout,
+      getRoleDisplayName,
+      getUserDisplayName,
+      getAvatarImage
     }
   }
 }

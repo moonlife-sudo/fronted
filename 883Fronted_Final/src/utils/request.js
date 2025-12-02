@@ -10,6 +10,18 @@ const BASE_URL = 'http://127.0.0.1:8081'
 async function request(url, options = {}) {
   const token = localStorage.getItem('token')
   
+  // 详细的token调试信息
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔍 Token调试信息:')
+    console.log('- Token存在:', !!token)
+    if (token) {
+      console.log('- Token长度:', token.length)
+      console.log('- Token前20字符:', token.substring(0, 20))
+      console.log('- Token是否包含点号:', token.includes('.'))
+      console.log('- localStorage中的userInfo:', localStorage.getItem('userInfo'))
+    }
+  }
+  
   // 检查token是否存在（排除登录接口）
   if (!token && !url.includes('/login')) {
     console.warn('警告: 未找到token，请求可能失败')
@@ -26,9 +38,10 @@ async function request(url, options = {}) {
     'Content-Type': 'application/json'
   }
   
-  // 如果有token，添加到请求头（后端使用 @RequestHeader("token") 获取）
+  // 如果有token，添加到请求头（尝试多种格式）
   if (token) {
     headers.token = token
+    headers.Authorization = `Bearer ${token}`  // 也添加标准的Authorization头
   }
   
   const defaultOptions = {
@@ -48,22 +61,51 @@ async function request(url, options = {}) {
   if (process.env.NODE_ENV === 'development') {
     console.log('请求URL:', `${BASE_URL}${url}`)
     console.log('请求方法:', config.method || 'GET')
-    console.log('请求头token:', token ? `${token.substring(0, 20)}...` : '未找到')
+    console.log('请求头token:', token ? `存在token (长度: ${token.length})` : '未找到token')
+    console.log('完整请求头:', config.headers)
   }
 
   try {
     const response = await fetch(`${BASE_URL}${url}`, config)
     
+    // 详细的HTTP状态码检查
+    console.log('HTTP响应状态:', response.status, response.statusText)
+    
+    // 检查401认证错误
+    if (response.status === 401) {
+      console.error('🚨 401认证失败详情:')
+      console.error('- URL:', `${BASE_URL}${url}`)
+      console.error('- Token存在:', !!token)
+      console.error('- Token值:', token ? `${token.substring(0, 20)}...` : 'null')
+      console.error('- 请求头:', config.headers)
+      
+      // 尝试获取响应体中的错误信息
+      try {
+        const errorText = await response.text()
+        console.error('- 401响应内容:', errorText)
+      } catch (e) {
+        console.error('- 无法读取401响应内容')
+      }
+      
+      localStorage.removeItem('token')
+      localStorage.removeItem('userInfo')
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
+      throw new Error('认证失败，token可能无效或已过期')
+    }
+    
+    // 检查其他HTTP错误
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error(`HTTP错误 ${response.status}:`, errorText)
+      throw new Error(`请求失败: ${response.status} - ${errorText || response.statusText}`)
+    }
+    
     // 处理非JSON响应
     const contentType = response.headers.get('content-type')
     if (!contentType || !contentType.includes('application/json')) {
-      if (response.ok) {
-        return { code: 1, msg: 'success', data: null }
-      } else {
-        // 尝试读取错误信息
-        const text = await response.text()
-        throw new Error(`请求失败: ${response.status} - ${text || response.statusText}`)
-      }
+      return { code: 1, msg: 'success', data: null }
     }
 
     const result = await response.json()

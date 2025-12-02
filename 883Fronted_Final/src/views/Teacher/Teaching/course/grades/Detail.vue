@@ -20,33 +20,33 @@
         <div class="students-table-wrapper">
           <table class="students-table">
             <thead>
-            <tr>
-              <th>学号</th>
-              <th>姓名</th>
-              <th v-for="component in gradebook.components" :key="component.component_id">
-                {{ component.component_name }}<br>
-                <span class="weight-text">({{ (component.weight * 100).toFixed(0) }}%)</span>
-              </th>
-              <th>总成绩</th>
-            </tr>
+              <tr>
+                <th>学号</th>
+                <th>姓名</th>
+                <th v-for="component in gradebook.components" :key="component.component_id">
+                  {{ component.component_name }}<br>
+                  <span class="weight-text">({{ (component.weight * 100).toFixed(0) }}%)</span>
+                </th>
+                <th>总成绩</th>
+              </tr>
             </thead>
             <tbody>
-            <tr v-for="student in gradebook.students" :key="student.student_id">
-              <td>{{ student.student_id_number || student.student_id }}</td>
-              <td>{{ student.full_name }}</td>
-              <td v-for="component in gradebook.components" :key="component.component_id">
+              <tr v-for="student in gradebook.students" :key="student.student_id">
+                <td>{{ student.student_id_number || student.student_id }}</td>
+                <td>{{ student.full_name }}</td>
+                <td v-for="component in gradebook.components" :key="component.component_id">
                   <span v-if="getStudentScore(student, component.component_id) !== null">
                     {{ getStudentScore(student, component.component_id) }}
                   </span>
-                <span v-else class="text-muted">-</span>
-              </td>
-              <td>
+                  <span v-else class="text-muted">-</span>
+                </td>
+                <td>
                   <span v-if="student.final_score !== null" class="final-score">
                     {{ student.final_score.toFixed(2) }}
                   </span>
-                <span v-else class="text-muted">-</span>
-              </td>
-            </tr>
+                  <span v-else class="text-muted">-</span>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -71,14 +71,22 @@ const mockGradebook = {
     { component_id: 3, component_name: '期末项目', weight: 0.3, max_score: 100 },
   ],
   students: [
-    { student_id: 1001, full_name: '张三', student_id_number: '2023001',
-      scores: { 1: 90, 2: 85, 3: 92 }, final_score: 88.6 },
-    { student_id: 1002, full_name: '李四', student_id_number: '2023002',
-      scores: { 1: 75, 2: 80, 3: 85 }, final_score: 80.0 },
-    { student_id: 1003, full_name: '王五', student_id_number: '2023003',
-      scores: { 1: 95, 2: 90, 3: null }, final_score: null }, // 缺少期末成绩
-    { student_id: 1004, full_name: '赵六', student_id_number: '2023004',
-      scores: { 1: 60, 2: 55, 3: 60 }, final_score: 58.5 }, // 不及格
+    {
+      student_id: 1001, full_name: '张三', student_id_number: '2023001',
+      scores: { 1: 90, 2: 85, 3: 92 }, final_score: 88.6
+    },
+    {
+      student_id: 1002, full_name: '李四', student_id_number: '2023002',
+      scores: { 1: 75, 2: 80, 3: 85 }, final_score: 80.0
+    },
+    {
+      student_id: 1003, full_name: '王五', student_id_number: '2023003',
+      scores: { 1: 95, 2: 90, 3: null }, final_score: null
+    }, // 缺少期末成绩
+    {
+      student_id: 1004, full_name: '赵六', student_id_number: '2023004',
+      scores: { 1: 60, 2: 55, 3: 60 }, final_score: 58.5
+    }, // 不及格
   ],
 };
 
@@ -119,31 +127,116 @@ const getStudentScore = (student, componentId) => {
 
 <style scoped>
 /* 移除查询区域样式 */
-.page-header { margin-bottom: 24px; }
-.page-header h1 { font-size: 24px; font-weight: 600; color: #333; margin: 0 0 8px 0; }
-.page-header p { color: #666; font-size: 14px; margin: 0; }
+.page-header {
+  margin-block-end: 24px;
+}
 
-.gradebook-card { margin-top: 24px; background: #fff; border-radius: 8px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05); }
+.page-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 8px 0;
+}
+
+.page-header p {
+  color: #666;
+  font-size: 14px;
+  margin: 0;
+}
+
+.gradebook-card {
+  margin-block-start: 24px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
+}
 
 .card-header {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 20px 24px; border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-block-end: 1px solid #f0f0f0;
 }
-.card-header h3 { margin: 0; font-size: 18px; font-weight: 600; color: #333; }
-.header-actions { display: flex; gap: 10px; }
 
-.btn { padding: 8px 16px; border-radius: 4px; cursor: pointer; border: none; font-size: 14px; }
-.btn-primary { background: #2A5CAA; color: white; }
-.btn-outline { background: white; border: 1px solid #ddd; color: #333; }
+.card-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
 
-.gradebook-content { padding: 16px; }
-.students-table-wrapper { overflow-x: auto; }
-.students-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-.students-table th, .students-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e8e8e8; }
-.students-table th { background: #fafafa; font-weight: 600; color: #333; }
-.weight-text { font-size: 12px; font-weight: normal; color: #999; }
-.final-score { font-weight: 600; color: #2A5CAA; }
-.text-muted { color: #999; }
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
 
-.loading-state, .empty-state { padding: 48px; text-align: center; color: #999; font-size: 16px; }
+.btn {
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: none;
+  font-size: 14px;
+}
+
+.btn-primary {
+  background: #2A5CAA;
+  color: white;
+}
+
+.btn-outline {
+  background: white;
+  border: 1px solid #ddd;
+  color: #333;
+}
+
+.gradebook-content {
+  padding: 16px;
+}
+
+.students-table-wrapper {
+  overflow-x: auto;
+}
+
+.students-table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.students-table th,
+.students-table td {
+  padding: 12px;
+  text-align: start;
+  border-block-end: 1px solid #e8e8e8;
+}
+
+.students-table th {
+  background: #fafafa;
+  font-weight: 600;
+  color: #333;
+}
+
+.weight-text {
+  font-size: 12px;
+  font-weight: normal;
+  color: #999;
+}
+
+.final-score {
+  font-weight: 600;
+  color: #2A5CAA;
+}
+
+.text-muted {
+  color: #999;
+}
+
+.loading-state,
+.empty-state {
+  padding: 48px;
+  text-align: center;
+  color: #999;
+  font-size: 16px;
+}
 </style>

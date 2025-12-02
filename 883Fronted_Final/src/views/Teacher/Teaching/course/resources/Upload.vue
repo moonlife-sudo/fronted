@@ -26,13 +26,8 @@
         <!-- 资源描述 -->
         <div class="form-group">
           <label for="description" class="form-label">资源描述</label>
-          <textarea
-              id="description"
-              v-model="formData.description"
-              class="form-textarea"
-              placeholder="请输入资源描述（可选）"
-              rows="4"
-          ></textarea>
+          <textarea id="description" v-model="formData.description" class="form-textarea" placeholder="请输入资源描述（可选）"
+            rows="4"></textarea>
         </div>
 
         <!-- 操作按钮 -->
@@ -112,8 +107,8 @@ const handleSubmit = async () => {
     // 假设当前课程 ID 从 sessionStorage 获取
     const courseId = sessionStorage.getItem('currentCourseId')
     const response = await fetch(
-        `http://127.0.0.1:8081/courses/${courseId}/resources/upload`,
-        { method: 'POST', body: formDataToSend }
+      `http://127.0.0.1:8081/courses/${courseId}/resources/upload`,
+      { method: 'POST', body: formDataToSend }
     )
 
     const result = await response.json()
@@ -215,6 +210,7 @@ const handleReset = () => {
   transition: all 0.3s ease;
   box-shadow: 0 3px 8px rgba(42, 92, 170, 0.25);
 }
+
 .file-select-button:hover {
   background: linear-gradient(135deg, #1e40af 0%, #1939b7 100%);
   transform: translateY(-1px);
@@ -228,9 +224,11 @@ const handleReset = () => {
   border-radius: 6px;
   border: 1px solid #d0e3ff;
 }
+
 .file-name {
   font-weight: 500;
 }
+
 .file-size {
   color: #777;
   margin-inline-start: 8px;
@@ -246,6 +244,7 @@ const handleReset = () => {
   resize: vertical;
   transition: all 0.3s ease;
 }
+
 .form-textarea:focus {
   border-color: #2A5CAA;
   box-shadow: 0 0 0 2px rgba(42, 92, 170, 0.1);
@@ -281,10 +280,12 @@ const handleReset = () => {
   cursor: pointer;
   transition: all 0.3s ease;
 }
+
 .button:hover:not(:disabled) {
   background: linear-gradient(135deg, #1e40af 0%, #1939b7 100%);
   box-shadow: 0 4px 12px rgba(42, 92, 170, 0.3);
 }
+
 .button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -300,6 +301,7 @@ const handleReset = () => {
   .form-actions {
     flex-direction: column-reverse;
   }
+
   .form-actions .button {
     inline-size: 100%;
   }

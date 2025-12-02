@@ -62,15 +62,15 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.homework-submissions { padding: 24px; max-width: 1200px; margin: 0 auto; }
+.homework-submissions { padding: 24px; max-inline-size: 1200px; margin: 0 auto; }
 .card { background: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow: hidden; }
-.table-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+.table-header { padding: 20px; border-block-end: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
 .table-header h3 { margin: 0; font-size: 16px; color: #333; }
 
 .btn-export { background: #2A5CAA; color: white; border: none; padding: 6px 16px; border-radius: 4px; cursor: pointer; }
 
-.data-table { width: 100%; border-collapse: collapse; }
-.data-table th, .data-table td { padding: 15px 20px; text-align: left; border-bottom: 1px solid #f5f5f5; font-size: 14px; }
+.data-table { inline-size: 100%; border-collapse: collapse; }
+.data-table th, .data-table td { padding: 15px 20px; text-align: start; border-block-end: 1px solid #f5f5f5; font-size: 14px; }
 .data-table th { background: #f9fafb; font-weight: 600; color: #666; }
 
 .status-tag { padding: 2px 8px; border-radius: 4px; font-size: 12px; }
@@ -79,5 +79,5 @@ onMounted(() => {
 .status-tag.missing { background: #fff1f0; color: #ff4d4f; }
 
 .high-risk { color: #ff4d4f; font-weight: bold; }
-.btn-text { background: none; border: none; color: #2A5CAA; cursor: pointer; margin-right: 10px; }
+.btn-text { background: none; border: none; color: #2A5CAA; cursor: pointer; margin-inline-end: 10px; }
 </style>
