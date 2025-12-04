@@ -33,8 +33,10 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 
 const router = useRouter()
+const store = useStore()
 const submitting = ref(false)
 const courseName = ref('')
 const form = reactive({ type: 'sick', start: '', end: '', reason: '' })
@@ -43,16 +45,45 @@ onMounted(() => {
   courseName.value = localStorage.getItem('currentCourseName') || 'Modern Cryptography'
 })
 
-const submit = () => {
-  if (!form.reason) return alert('请填写理由')
-  submitting.value = true
-
-  // 模拟请求
-  setTimeout(() => {
-    submitting.value = false
-    alert('申请已提交，等待老师审批')
+const submit = async () => {
+  if (!form.reason) {
+    alert('请填写请假理由')
+    return
+  }
+  
+  if (!form.start || !form.end) {
+    alert('请选择请假时间')
+    return
+  }
+  
+  if (new Date(form.start) >= new Date(form.end)) {
+    alert('结束时间必须晚于开始时间')
+    return
+  }
+  
+  try {
+    submitting.value = true
+    
+    // 通过Vuex提交请假申请
+    await store.dispatch('submitLeaveApplication', {
+      type: form.type,
+      start: form.start,
+      end: form.end,
+      reason: form.reason,
+      courseName: courseName.value
+    })
+    
+    alert('请假申请已提交，等待老师审批')
+    
+    // 跳转到记录页面
     router.push('records')
-  }, 800)
+    
+  } catch (error) {
+    console.error('提交请假申请失败:', error)
+    alert('提交失败，请稍后重试')
+  } finally {
+    submitting.value = false
+  }
 }
 </script>
 

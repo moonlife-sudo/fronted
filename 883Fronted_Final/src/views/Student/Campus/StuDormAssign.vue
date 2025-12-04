@@ -413,10 +413,11 @@ export default {
       if (this.isSubmitting) return
       
       // 验证所有必填项
+      // 验证所有必填项
       const requiredFields = [
         'sleepTime', 'wakeUpTime', 'nap',
         'smoking', 'mindSmoking', 'gaming', 'headphone',
-        'chatting', 'guest', 'activity',
+        'chatting', 'friendsVisit', 'groupActivities', // 注意这里字段名要跟data里的一致
         'cleanliness', 'organization', 'mindMessy',
         'quietStudy', 'noiseTolerance',
         'eatingInRoom', 'fragrance', 'mindSmell'
@@ -441,39 +442,44 @@ export default {
           gaming_freq: this.questionnaire.gaming === 'often' ? 1 : 2,
           headphone_usage: this.questionnaire.headphone === 'often' ? 1 : 2,
           chatting_pref: this.questionnaire.chatting === 'like' ? 1 : 2,
-          guest_acceptance: this.questionnaire.guest === 'accept' ? 1 : 2,
-          group_activity_willingness: this.questionnaire.activity === 'willing' ? 1 : 2,
-          hygiene_requirement: this.questionnaire.cleanliness === 'strict' ? 1 : (this.questionnaire.cleanliness === 'normal' ? 2 : 3),
-          organization_level: this.questionnaire.organization === 'high' ? 1 : 2,
-          roommate_hygiene_tolerance: this.questionnaire.mindMessy === 'notMind' ? 1 : 2,
+          guest_acceptance: this.questionnaire.friendsVisit === 'accept' ? 1 : 2,
+          group_activity_willingness: this.questionnaire.groupActivities === 'willing' ? 1 : 2,
+          hygiene_requirement: this.questionnaire.cleanliness === 'high' ? 1 : (this.questionnaire.cleanliness === 'casual' ? 3 : 2),
+          organization_level: this.questionnaire.organization === 'tidy' ? 1 : 2,
+          roommate_hygiene_tolerance: this.questionnaire.mindMessy === 'mind' ? 1 : 2,
           quiet_study_need: this.questionnaire.quietStudy === 'yes' ? 1 : 2,
           noise_tolerance_level: this.questionnaire.noiseTolerance === 'low' ? 1 : 2,
           dorm_food_freq: this.questionnaire.eatingInRoom === 'often' ? 1 : 2,
           fragrance_usage: this.questionnaire.fragrance === 'often' ? 1 : 2,
-          smell_sensitivity: this.questionnaire.mindSmell === 'mind' ? 1 : 2
+          smell_sensitivity: this.questionnaire.mindSmell === 'mind' ? 1 : 2,
+
+          // 🔥 关键修改：将特殊需求发给后端对应的 self_introduction 字段
+          self_introduction: this.questionnaire.specialRequest
         }
-        
-        // 如果有具体时间，可以添加
+
+        // 补充具体时间字段，防止后端报错
         if (this.questionnaire.sleepTime === 'before12') {
           surveyData.sleep_time = '23:00:00'
         } else {
           surveyData.sleep_time = '00:30:00'
         }
-        
+
         if (this.questionnaire.wakeUpTime === 'before7') {
           surveyData.wake_up_time = '06:30:00'
         } else {
           surveyData.wake_up_time = '07:30:00'
         }
-        
+
         const result = await submitDormSurvey(surveyData)
-        
+
         if (result.code === 1) {
-          alert('问卷提交成功！')
-          // 重新加载问卷数据
-          await this.loadQuestionnaire()
+          // ✅ 修改为等待提示
+          alert('问卷提交成功！您的偏好已录入系统，请耐心等待管理员进行 AI 智能分配。')
+          await this.loadQuestionnaire() // 仅回显问卷
+
+          // ❌ 不要调用 loadMyDormResult()，因为还没分配
         } else {
-          alert(result.msg || '提交失败，请重试')
+          alert(result.msg || '提交失败')
         }
       } catch (error) {
         console.error('提交问卷失败:', error)

@@ -60,16 +60,16 @@ onMounted(() => {
 
 <style scoped>
 /* 复用之前的样式，无需改动 */
-.grades-page { padding: 24px; max-width: 1000px; margin: 0 auto; }
-.overview-card { background: linear-gradient(135deg, #2A5CAA 0%, #5C6BC0 100%); color: white; padding: 30px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.grades-page { padding: 24px; max-inline-size: 1000px; margin: 0 auto; }
+.overview-card { background: linear-gradient(135deg, #2A5CAA 0%, #5C6BC0 100%); color: white; padding: 30px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; margin-block-end: 24px; }
 .score-circle { text-align: center; }
-.score-circle .label { display: block; font-size: 14px; opacity: 0.9; margin-bottom: 5px; }
+.score-circle .label { display: block; font-size: 14px; opacity: 0.9; margin-block-end: 5px; }
 .score-circle .value { font-size: 48px; font-weight: bold; }
-.rank-info { text-align: right; font-size: 14px; opacity: 0.9; }
+.rank-info { text-align: end; font-size: 14px; opacity: 0.9; }
 .card { background: white; border-radius: 8px; padding: 24px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); }
-.grade-table { width: 100%; border-collapse: collapse; }
-.grade-table th { text-align: left; color: #666; padding: 12px; background: #f9f9f9; }
-.grade-table td { padding: 12px; border-bottom: 1px solid #eee; color: #333; }
+.grade-table { inline-size: 100%; border-collapse: collapse; }
+.grade-table th { text-align: start; color: #666; padding: 12px; background: #f9f9f9; }
+.grade-table td { padding: 12px; border-block-end: 1px solid #eee; color: #333; }
 .my-score { font-weight: bold; color: #2A5CAA; }
 .tag { padding: 2px 8px; border-radius: 4px; font-size: 12px; }
 .tag.success { background: #f6ffed; color: #52c41a; }

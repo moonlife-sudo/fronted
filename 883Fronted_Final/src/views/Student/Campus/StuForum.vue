@@ -18,6 +18,14 @@
       </div>
 
       <div class="post-list">
+        <div v-if="loadingState" class="loading-state">
+          <i class="bi bi-hourglass-split spinning"></i>
+          <span>加载中...</span>
+        </div>
+        <div v-else-if="filteredPosts.length === 0" class="empty-state">
+          <i class="bi bi-chat-dots"></i>
+          <span>{{ searchTerm ? '没有找到匹配的帖子' : '暂无帖子，快来发布第一条吧！' }}</span>
+        </div>
         <article 
           v-for="post in filteredPosts" 
           :key="post.id"
@@ -28,7 +36,7 @@
             <h2 class="post-title">{{ post.title }}</h2>
             <div class="post-meta">
               <span class="post-author">{{ post.author }}</span>
-              <span class="post-date">{{ post.date }}</span>
+              <span class="post-date">{{ formatDate(post.createTime) }}</span>
             </div>
           </div>
           <div class="post-content">
@@ -38,8 +46,11 @@
             <!-- 🎯 点击"阅读更多"跳转到帖子详情页 -->
             <button class="read-more" @click.stop="goToPostDetail(post.id)">阅读更多</button>
             <div class="post-actions">
+              <button class="like-btn" @click.stop="likePost(post.id)" :disabled="likingPosts.includes(post.id)">
+                <i class="bi bi-heart"></i> {{ post.likes || 0 }}
+              </button>
               <span class="comment-count">
-                <i class="bi bi-chat-left-text"></i> {{ post.commentCount }}
+                <i class="bi bi-chat-left-text"></i> {{ post.comments || 0 }}
               </span>
             </div>
           </div>
@@ -63,50 +74,26 @@ export default {
   data() {
     return {
       searchTerm: '',
-      posts: [
-        {
-          id: 1,
-          title: '关于宿舍卫生检查的通知',
-          author: '张老师',
-          date: '2023-10-15',
-          content: '本周五下午3点将进行全校宿舍卫生检查，请各位同学提前做好宿舍卫生清洁工作。检查内容包括床铺整理、地面清洁、物品摆放等...',
-          commentCount: 12
-        },
-        {
-          id: 2,
-          title: '宿舍热水供应时间调整',
-          author: '李同学',
-          date: '2023-10-12',
-          content: '由于季节变化，从下周一开始宿舍热水供应时间调整为：早上6:30-8:30，中午12:00-14:00，晚上17:30-23:30。请大家合理安排时间...',
-          commentCount: 8
-        },
-        {
-          id: 3,
-          title: '寻找丢失的校园卡',
-          author: '王同学',
-          date: '2023-10-10',
-          content: '今天下午在图书馆附近丢失校园卡一张，卡号为20231001，卡套为蓝色。如有拾到者请联系13812345678，非常感谢！...',
-          commentCount: 5
-        },
-        {
-          id: 4,
-          title: '宿舍楼自习室开放通知',
-          author: '赵老师',
-          date: '2023-10-08',
-          content: '为方便同学们学习，宿舍楼1楼自习室即日起延长开放时间至晚上11点。请同学们保持安静，爱护公共设施，离开时带走个人物品...',
-          commentCount: 15
-        }
-      ]
+      likingPosts: [] // 正在点赞的帖子ID列表
     }
   },
   computed: {
+    // 从store获取所有帖子
+    allPosts() {
+      return this.$store.getters.getAllPosts
+    },
+    // 获取加载状态
+    loadingState() {
+      return this.$store.getters.getLoadingState
+    },
+    // 过滤搜索结果
     filteredPosts() {
       if (!this.searchTerm) {
-        return this.posts
+        return this.allPosts
       }
       
       const term = this.searchTerm.toLowerCase()
-      return this.posts.filter(post => 
+      return this.allPosts.filter(post => 
         post.title.toLowerCase().includes(term) || 
         post.content.toLowerCase().includes(term)
       )
@@ -123,18 +110,61 @@ export default {
       this.$router.push('/student/postdetail')
     },
     createNewPost() {
-      // 跳转到创建新帖子页面
-      console.log('创建新帖子')
-      // this.$router.push('/post/new')
+      // 跳转到首页的快速发帖功能
+      this.$router.push('/student/campus')
+    },
+    
+    // 点赞帖子
+    async likePost(postId) {
+      if (this.likingPosts.includes(postId)) return
+      
+      try {
+        this.likingPosts.push(postId)
+        await this.$store.dispatch('likePost', postId)
+      } catch (error) {
+        console.error('点赞失败:', error)
+        this.$message?.error('点赞失败，请稍后重试')
+      } finally {
+        this.likingPosts = this.likingPosts.filter(id => id !== postId)
+      }
+    },
+    
+    // 格式化日期
+    formatDate(dateStr) {
+      const date = new Date(dateStr)
+      const now = new Date()
+      const diff = now - date
+      const diffDays = Math.floor(diff / (1000 * 60 * 60 * 24))
+      
+      if (diffDays === 0) {
+        const diffHours = Math.floor(diff / (1000 * 60 * 60))
+        const diffMinutes = Math.floor(diff / (1000 * 60))
+        
+        if (diffHours === 0) {
+          if (diffMinutes < 1) return '刚刚'
+          return `${diffMinutes}分钟前`
+        }
+        return `${diffHours}小时前`
+      } else if (diffDays === 1) {
+        return '昨天'
+      } else if (diffDays < 7) {
+        return `${diffDays}天前`
+      } else {
+        return date.toLocaleDateString('zh-CN', { 
+          month: '2-digit', 
+          day: '2-digit' 
+        })
+      }
     }
-
-    /*
-    //详情页显示特定帖子的内容
-    goToPostDetail(postId) {
-    this.$router.push(`/student/postdetail/${postId}`) }
-     })
+  },
+  
+  async mounted() {
+    // 组件挂载时获取帖子数据
+    try {
+      await this.$store.dispatch('fetchPosts')
+    } catch (error) {
+      console.error('获取帖子失败:', error)
     }
-    */
   }
 }
 </script>
@@ -301,12 +331,65 @@ export default {
   gap: var(--small-spacing);
 }
 
+.like-btn {
+  background: none;
+  border: 1px solid #e0e0e0;
+  color: var(--light-text);
+  font-size: 14px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.like-btn:hover:not(:disabled) {
+  background-color: #fff5f5;
+  border-color: #ff6b6b;
+  color: #ff6b6b;
+}
+
+.like-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .comment-count {
   color: var(--light-text);
   font-size: 14px;
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+/* 加载和空状态样式 */
+.loading-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: var(--lighter-text);
+  text-align: center;
+}
+
+.loading-state i,
+.empty-state i {
+  font-size: 2.5rem;
+  margin-bottom: 16px;
+  color: var(--lighter-text);
+}
+
+.loading-state i.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .create-post-btn {

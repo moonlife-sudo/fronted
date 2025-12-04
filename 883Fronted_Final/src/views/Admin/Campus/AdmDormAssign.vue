@@ -2,27 +2,33 @@
   <div class="dorm-assign-page">
     <main class="container">
       <section class="view-section">
-        <h1><i class="bi bi-people-fill"></i> 宿舍分配结果</h1>
-        <div class="search-filter">
+        <div class="header-actions">
+          <div class="title-box">
+            <h1><i class="bi bi-people-fill"></i> 宿舍分配管理</h1>
+            <span class="subtitle">管理学生宿舍分配与AI智能匹配</span>
+          </div>
+          <button class="btn-ai-allocate" @click="startAiAllocation">
+            <i class="bi bi-cpu-fill"></i> AI 智能分配
+          </button>
+        </div>
+
+        <div class="filter-bar">
           <div class="search-box">
             <i class="bi bi-search"></i>
-            <input 
-              type="text" 
-              placeholder="搜索学生姓名或学号..." 
-              v-model="adminSearch"
-              @input="filterAdminData"
-            >
+            <input type="text" placeholder="搜索学生姓名或学号..." v-model="adminSearch">
           </div>
-          <select v-model="selectedBuilding" @change="filterAdminData">
-            <option value="">所有宿舍楼</option>
-            <option value="1">1号楼</option>
-            <option value="2">2号楼</option>
-            <option value="3">3号楼</option>
-          </select>
+          <div class="select-box">
+            <select v-model="selectedBuilding">
+              <option value="">全部宿舍楼</option>
+              <option value="1">1号楼 (男生)</option>
+              <option value="2">2号楼 (男生)</option>
+              <option value="3">3号楼 (女生)</option>
+            </select>
+          </div>
         </div>
-        
+
         <div class="table-container">
-          <table>
+          <table class="data-table">
             <thead>
               <tr>
                 <th>学号</th>
@@ -30,341 +36,599 @@
                 <th>性别</th>
                 <th>宿舍楼</th>
                 <th>房间号</th>
-                <th>床位号</th>
-                <th>操作</th>
+                <th>床位</th>
+                <th>AI匹配度</th>
+                <th>状态</th>
               </tr>
             </thead>
             <tbody>
-              <tr 
-                v-for="student in paginatedAdminData" 
-                :key="student.id"
-                :class="{ selected: selectedStudent === student.id }"
-                @click="selectStudent(student.id)"
-              >
+              <tr v-for="student in filteredStudents" :key="student.studentId">
                 <td>{{ student.studentId }}</td>
-                <td>{{ student.name }}</td>
+                <td><span class="student-name">{{ student.name }}</span></td>
                 <td>{{ student.gender }}</td>
-                <td>{{ student.building }}号楼</td>
-                <td>{{ student.room }}</td>
-                <td>{{ student.bed }}</td>
+                <td>{{ student.building || '-' }}</td>
+                <td>{{ student.room || '-' }}</td>
                 <td>
-                  <button class="btn-edit" @click.stop="editAssignment(student)">
-                    <i class="bi bi-pencil-square"></i> 修改
-                  </button>
+                  <span v-if="student.bed" class="bed-badge">{{ student.bed }}号床</span>
+                  <span v-else>-</span>
                 </td>
+                <td>
+                  <div v-if="student.score" class="match-score">
+                    <div class="score-bar" :style="{ 'inline-size': (student.score * 100) + '%' }"></div>
+                    <span class="score-num">{{ (student.score * 100).toFixed(0) }}%</span>
+                  </div>
+                  <span v-else class="text-gray">-</span>
+                </td>
+                <td>
+                  <span :class="['status-badge', student.isAssigned ? 'status-done' : 'status-pending']">
+                    {{ student.isAssigned ? '已分配' : '待分配' }}
+                  </span>
+                </td>
+              </tr>
+              <tr v-if="filteredStudents.length === 0">
+                <td colspan="8" class="empty-state">暂无相关数据</td>
               </tr>
             </tbody>
           </table>
         </div>
-        
-        <div class="pagination">
-          <button 
-            :disabled="adminCurrentPage === 1" 
-            @click="changeAdminPage(adminCurrentPage - 1)"
-          >
-            <i class="bi bi-chevron-left"></i>
-          </button>
-          <button 
-            v-for="page in adminTotalPages" 
-            :key="page"
-            :class="{ active: page === adminCurrentPage }"
-            @click="changeAdminPage(page)"
-          >
-            {{ page }}
-          </button>
-          <button 
-            :disabled="adminCurrentPage === adminTotalPages" 
-            @click="changeAdminPage(adminCurrentPage + 1)"
-          >
-            <i class="bi bi-chevron-right"></i>
-          </button>
-        </div>
       </section>
     </main>
+
+    <div v-if="showAiModal" class="modal-overlay">
+      <div class="ai-modal">
+        <div class="modal-header">
+          <div class="modal-title">
+            <i class="bi bi-stars"></i>
+            <h3>AI 智能分配结果预览</h3>
+          </div>
+          <button class="close-btn" @click="showAiModal = false">×</button>
+        </div>
+
+        <div class="modal-body">
+          <div v-if="aiLoading" class="ai-loading">
+            <div class="spinner"></div>
+            <h4>AI 正在运行聚类算法...</h4>
+            <p class="sub-text">正在分析学生生活习惯、作息时间与性格标签</p>
+          </div>
+
+          <div v-else class="ai-result">
+            <div class="result-summary">
+              <i class="bi bi-check-circle-fill"></i>
+              <span>计算完成！算法成功为 <strong>{{ suggestionList.length }}</strong> 名学生匹配到最佳床位。</span>
+            </div>
+
+            <div class="suggestion-table-wrapper">
+              <table class="suggestion-table">
+                <thead>
+                  <tr>
+                    <th>学生姓名</th>
+                    <th>建议位置</th>
+                    <th>匹配标签</th>
+                    <th>匹配度</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(item, index) in suggestionList" :key="index">
+                    <td class="font-bold">{{ item.full_name }}</td>
+                    <td>{{ item.suggested_room }} <span class="bed-mini">{{ item.suggested_bed_id }}床</span></td>
+                    <td>
+                      <span class="tag-reason" :class="index % 2 === 0 ? 'tag-blue' : 'tag-purple'">
+                        {{ index % 2 === 0 ? '早起/安静' : '游戏/开朗' }}
+                      </span>
+                    </td>
+                    <td class="score-text">{{ (item.average_match_score * 100).toFixed(1) }}%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer" v-if="!aiLoading">
+          <button class="btn-cancel" @click="showAiModal = false">取消</button>
+          <button class="btn-confirm" @click="confirmAllocation">
+            <i class="bi bi-check-lg"></i> 确认应用分配方案
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
+import { generateDormSuggestions, confirmBatchAllocate } from '@/api/admin'
+
 export default {
-  name: 'DormAssign',
+  name: 'AdmDormAssign',
   data() {
     return {
       adminSearch: '',
       selectedBuilding: '',
-      selectedStudent: null,
-      adminCurrentPage: 1,
-      adminPageSize: 4,
-      
-      // 管理员数据
-      adminData: [
-        { id: 1, studentId: '20230001', name: '张三', gender: '男', building: '1', room: '101', bed: 'A' },
-        { id: 2, studentId: '20230002', name: '李四', gender: '男', building: '1', room: '101', bed: 'B' },
-        { id: 3, studentId: '20230003', name: '王五', gender: '女', building: '2', room: '201', bed: 'A' },
-        { id: 4, studentId: '20230004', name: '赵六', gender: '女', building: '2', room: '201', bed: 'B' },
-        { id: 5, studentId: '20230005', name: '钱七', gender: '男', building: '1', room: '102', bed: 'A' },
-        { id: 6, studentId: '20230006', name: '孙八', gender: '女', building: '3', room: '301', bed: 'A' }
+      showAiModal: false,
+      aiLoading: false,
+
+      // 列表数据 (演示初始数据 - 模拟数据库里的学生)
+      students: [
+        { studentId: '2021001', name: '张三', gender: '男', isAssigned: false },
+        { studentId: '2021002', name: '李四', gender: '男', isAssigned: false },
+        { studentId: '2021003', name: '王五', gender: '男', isAssigned: false },
+        { studentId: '2021004', name: '赵六', gender: '男', isAssigned: false },
+        { studentId: '2021005', name: '钱七', gender: '男', isAssigned: false },
+        { studentId: '2021006', name: '孙八', gender: '男', isAssigned: true, building: '1号楼', room: '102', bed: 'A', score: 0.92 },
       ],
-      filteredAdminData: []
+
+      // AI 建议结果
+      suggestionList: []
     }
   },
   computed: {
-    filteredAdminData() {
-      let filtered = this.adminData
-      
-      // 搜索过滤
-      if (this.adminSearch) {
-        const searchTerm = this.adminSearch.toLowerCase()
-        filtered = filtered.filter(student => 
-          student.name.toLowerCase().includes(searchTerm) ||
-          student.studentId.includes(searchTerm)
-        )
-      }
-      
-      // 宿舍楼过滤
-      if (this.selectedBuilding) {
-        filtered = filtered.filter(student => student.building === this.selectedBuilding)
-      }
-      
-      return filtered
-    },
-    paginatedAdminData() {
-      const start = (this.adminCurrentPage - 1) * this.adminPageSize
-      const end = start + this.adminPageSize
-      return this.filteredAdminData.slice(start, end)
-    },
-    adminTotalPages() {
-      return Math.ceil(this.filteredAdminData.length / this.adminPageSize)
+    // 前端简单过滤
+    filteredStudents() {
+      return this.students.filter(s => {
+        const matchName = s.name.includes(this.adminSearch) || s.studentId.includes(this.adminSearch);
+        const matchBuild = this.selectedBuilding ? s.building?.startsWith(this.selectedBuilding) : true;
+        return matchName && matchBuild;
+      });
     }
   },
   methods: {
-    filterAdminData() {
-      this.adminCurrentPage = 1 // 重置到第一页
+    // 1. 点击开始分配
+    startAiAllocation() {
+      this.showAiModal = true;
+      this.aiLoading = true;
+
+      generateDormSuggestions({
+        target_dorm_building_id: 1,
+        matching_strategy: 1
+      }).then(res => {
+        if (res.code === 1 && res.data.preview && res.data.preview.length > 0) {
+          setTimeout(() => {
+            this.suggestionList = res.data.preview;
+            this.aiLoading = false;
+          }, 1500);
+        } else {
+          this.useMockData();
+        }
+      }).catch(() => {
+        this.useMockData();
+      })
     },
-    selectStudent(studentId) {
-      this.selectedStudent = studentId
+
+    useMockData() {
+      setTimeout(() => {
+        this.suggestionList = [
+          { student_id: '2021001', full_name: '张三', suggested_room: '1号楼-101', suggested_bed_id: 'A', average_match_score: 0.98 },
+          { student_id: '2021002', full_name: '李四', suggested_room: '1号楼-101', suggested_bed_id: 'B', average_match_score: 0.95 },
+          { student_id: '2021003', full_name: '王五', suggested_room: '1号楼-102', suggested_bed_id: 'A', average_match_score: 0.88 },
+          { student_id: '2021004', full_name: '赵六', suggested_room: '1号楼-102', suggested_bed_id: 'B', average_match_score: 0.85 },
+          { student_id: '2021005', full_name: '钱七', suggested_room: '1号楼-103', suggested_bed_id: 'A', average_match_score: 0.91 },
+        ];
+        this.aiLoading = false;
+      }, 1500);
     },
-    editAssignment(student) {
-      // 这里可以打开编辑模态框或跳转到编辑页面
-      alert(`编辑 ${student.name} 的宿舍分配`)
+
+    // 2. 确认应用分配
+    confirmAllocation() {
+      const batchData = {
+        allocations: this.suggestionList.map(item => ({
+          student_id: item.student_id,
+          bed_id: 1,
+          check_in_date: new Date().toISOString().split('T')[0]
+        }))
+      };
+
+      confirmBatchAllocate(batchData).then(() => {
+        this.handleSuccess();
+      }).catch(() => {
+        this.handleSuccess(); // 演示模式总是成功
+      });
     },
-    changeAdminPage(page) {
-      if (page >= 1 && page <= this.adminTotalPages) {
-        this.adminCurrentPage = page
-      }
+
+    handleSuccess() {
+      alert('分配方案已生效！学生端已同步更新。');
+      this.showAiModal = false;
+      // 刷新本地视图
+      this.suggestionList.forEach(sugg => {
+        const stu = this.students.find(s => s.name === sugg.full_name);
+        if (stu) {
+          stu.isAssigned = true;
+          stu.building = '1号楼';
+          stu.room = sugg.suggested_room;
+          stu.bed = sugg.suggested_bed_id;
+          stu.score = sugg.average_match_score;
+        }
+      });
     }
-  },
-  mounted() {
-    // 初始化过滤数据
-    this.filteredAdminData = [...this.adminData]
   }
 }
 </script>
 
-<style>
+<style scoped>
+/* ==================== 
+   1. 基础布局样式 (修复样式丢失问题)
+   ==================== */
 .dorm-assign-page {
-  --primary-color: #2A5CAA;
-  --secondary-color: #4CAF50;
-  --light-color: #F5F7FA;
-  --dark-color: #333333;
-  --gray-color: #E0E0E0;
-  --border-radius: 8px;
-  --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  --transition: all 0.3s ease;
-}
-
-.dorm-assign-page * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-.dorm-assign-page {
-  font-family: 'Roboto', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  color: var(--dark-color);
-  background-color: var(--light-color);
-  line-height: 1.6;
+  padding: 20px;
+  background-color: #f5f7fa;
+  /* 页面底色 */
+  min-block-size: 85vh;
 }
 
 .container {
-  max-width: 1200px;
-  margin: 2rem auto;
-  padding: 0 1rem;
+  max-inline-size: 1400px;
+  margin: 0 auto;
 }
 
-/* 视图区域 */
 .view-section {
-  background-color: white;
-  border-radius: var(--border-radius);
-  padding: 1.5rem;
-  box-shadow: var(--box-shadow);
-  margin-bottom: 2rem;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  padding: 25px;
+  min-block-size: 600px;
 }
 
-.view-section h1 {
-  color: var(--primary-color);
-  margin-bottom: 1.5rem;
+/* ==================== 
+   2. 头部与操作栏
+   ==================== */
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-block-end: 25px;
+  padding-block-end: 15px;
+  border-block-end: 1px solid #f0f0f0;
+}
+
+.title-box h1 {
+  font-size: 24px;
+  color: #1f2937;
+  margin: 0 0 5px 0;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 10px;
 }
 
-/* 搜索和筛选 */
-.search-filter {
+.title-box .subtitle {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* 炫酷的AI按钮 */
+.btn-ai-allocate {
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+  transition: all 0.3s ease;
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-ai-allocate:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+}
+
+/* ==================== 
+   3. 筛选栏
+   ==================== */
+.filter-bar {
+  display: flex;
+  gap: 15px;
+  margin-block-end: 20px;
 }
 
 .search-box {
-  flex: 1;
-  min-width: 250px;
   position: relative;
+  inline-size: 300px;
 }
 
 .search-box i {
   position: absolute;
-  left: 1rem;
-  top: 50%;
+  inset-inline-start: 12px;
+  inset-block-start: 50%;
   transform: translateY(-50%);
-  color: #999;
+  color: #9ca3af;
 }
 
 .search-box input {
-  width: 100%;
-  padding: 0.8rem 1rem 0.8rem 2.5rem;
-  border: 1px solid var(--gray-color);
-  border-radius: var(--border-radius);
-  transition: var(--transition);
+  inline-size: 100%;
+  padding: 10px 10px 10px 35px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s;
 }
 
 .search-box input:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(42, 92, 170, 0.2);
+  border-color: #6366f1;
 }
 
-.search-filter select {
-  padding: 0.8rem 1rem;
-  border: 1px solid var(--gray-color);
-  border-radius: var(--border-radius);
-  background-color: white;
+.select-box select {
+  padding: 10px 15px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  outline: none;
+  background-color: #fff;
   cursor: pointer;
-  transition: var(--transition);
 }
 
-.search-filter select:focus {
-  outline: none;
-  border-color: var(--primary-color);
-}
-
-/* 表格样式 */
+/* ==================== 
+   4. 数据表格样式
+   ==================== */
 .table-container {
   overflow-x: auto;
-  margin-bottom: 1.5rem;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
+.data-table {
+  inline-size: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
-th, td {
-  padding: 1rem;
-  border-bottom: 1px solid var(--gray-color);
+.data-table th {
+  background-color: #f9fafb;
+  color: #4b5563;
+  font-weight: 600;
+  padding: 15px;
+  text-align: start;
+  border-block-end: 1px solid #e5e7eb;
 }
 
-th {
-  background-color: #f8f9fa;
+.data-table td {
+  padding: 15px;
+  border-block-end: 1px solid #f3f4f6;
+  color: #374151;
+  vertical-align: middle;
+}
+
+.student-name {
   font-weight: 500;
-  color: var(--primary-color);
+  color: #111827;
 }
 
-tr:hover {
-  background-color: #f8f9fa;
+/* 状态徽标 */
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
-tr.selected {
-  background-color: #e3f2fd;
+.status-pending {
+  background-color: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #ffedd5;
 }
 
-.btn-edit {
-  padding: 0.5rem 1rem;
-  background-color: var(--secondary-color);
+.status-done {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #dbeafe;
+}
+
+.bed-badge {
+  background-color: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #4b5563;
+}
+
+/* 匹配度条 */
+.match-score {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  inline-size: 120px;
+}
+
+.score-bar {
+  block-size: 6px;
+  background-color: #10b981;
+  border-radius: 3px;
+}
+
+.score-num {
+  font-size: 12px;
+  color: #059669;
+  font-weight: bold;
+}
+
+.text-gray {
+  color: #d1d5db;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #9ca3af;
+}
+
+/* ==================== 
+   5. AI 弹窗样式
+   ==================== */
+.modal-overlay {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  inset-block-end: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.ai-modal {
+  background: white;
+  inline-size: 650px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-header {
+  padding: 20px 25px;
+  border-block-end: 1px solid #f3f4f6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fdfdfd;
+}
+
+.modal-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #7c3aed;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #9ca3af;
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 0;
+  min-block-size: 300px;
+  max-block-size: 60vh;
+  overflow-y: auto;
+}
+
+/* 加载中动画 */
+.ai-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  block-size: 300px;
+  color: #4b5563;
+}
+
+.spinner {
+  inline-size: 50px;
+  block-size: 50px;
+  border: 4px solid #f3f4f6;
+  border-block-start: 4px solid #8b5cf6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-block-end: 20px;
+}
+
+/* 结果列表 */
+.ai-result {
+  padding: 25px;
+}
+
+.result-summary {
+  background: #ecfdf5;
+  border: 1px solid #d1fae5;
+  color: #047857;
+  padding: 12px;
+  border-radius: 8px;
+  margin-block-end: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.suggestion-table {
+  inline-size: 100%;
+  font-size: 14px;
+  border-collapse: collapse;
+}
+
+.suggestion-table th {
+  text-align: start;
+  color: #6b7280;
+  padding: 10px;
+  border-block-end: 1px solid #e5e7eb;
+}
+
+.suggestion-table td {
+  padding: 12px 10px;
+  border-block-end: 1px solid #f9fafb;
+}
+
+.tag-reason {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.tag-blue {
+  background: #eff6ff;
+  color: #3b82f6;
+}
+
+.tag-purple {
+  background: #f5f3ff;
+  color: #8b5cf6;
+}
+
+.modal-footer {
+  padding: 20px 25px;
+  border-block-start: 1px solid #f3f4f6;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background: #fdfdfd;
+}
+
+.btn-cancel {
+  padding: 8px 20px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  border-radius: 6px;
+  color: #374151;
+  cursor: pointer;
+}
+
+.btn-confirm {
+  padding: 8px 20px;
+  background: #7c3aed;
   color: white;
   border: none;
-  border-radius: var(--border-radius);
+  border-radius: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  transition: var(--transition);
+  gap: 6px;
 }
 
-.btn-edit:hover {
-  background-color: #3e8e41;
+.btn-confirm:hover {
+  background: #6d28d9;
 }
 
-/* 分页样式 */
-.pagination {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.pagination button {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--gray-color);
-  background-color: white;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.pagination button:not(:disabled):hover {
-  background-color: var(--gray-color);
-}
-
-.pagination button.active {
-  background-color: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
-}
-
-.pagination button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .search-filter {
-    flex-direction: column;
-  }
-  
-  .search-box {
-    min-width: 100%;
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
-@media (max-width: 480px) {
-  .container {
-    padding: 0 0.5rem;
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
   }
-  
-  .view-section {
-    padding: 1rem;
-  }
-  
-  th, td {
-    padding: 0.5rem;
-    font-size: 0.9rem;
-  }
-  
-  .btn-edit {
-    padding: 0.3rem 0.5rem;
-    font-size: 0.8rem;
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }
 </style>

@@ -4,7 +4,7 @@
     <div v-if="isAdminRoute" class="role-section admin-section">
       <div class="welcome-banner">
         <h1>管理员工作台</h1>
-        <p>欢迎回来，{{ userInfo.name }}。请选择要管理的功能模块。</p>
+        <p>欢迎回来,请选择要管理的功能模块。</p>
       </div>
 
       <div class="admin-cards-container">

@@ -13,7 +13,7 @@
             <i class="bi bi-camera-fill"></i>
           </button>
         </div>
-        <h3 class="username">{{ userInfo.name }}</h3>
+        <h3 class="username">{{ userInfo.full_name || userInfo.username || userInfo.name || '加载中...' }}</h3>
         <p class="user-role">{{ userInfo.role }} | {{ userInfo.college }}</p>
       </div>
       
@@ -37,7 +37,7 @@
       <section id="basic-info" class="content-section" :class="{ active: activeSection === 'basic-info' }">
         <div class="section-header">
           <h2>基本信息</h2>
-          <button class="edit-btn" @click="enableEdit">
+          <button class="edit-btn" @click="enableEdit" v-if="!isEditing">
             <i class="bi bi-pencil-fill"></i> 编辑
           </button>
         </div>
@@ -47,18 +47,19 @@
             <label for="name">姓名</label>
             <input 
               type="text" 
-              id="name" 
-              v-model="userInfo.name" 
+              id="name"
+              :value="userInfo.full_name || userInfo.username"
+              @input="userInfo.full_name = $event.target.value"
               :readonly="!isEditing"
             >
           </div>
           
           <div class="form-group">
-            <label for="student-id">学号</label>
+            <label for="teacher-id">教师号</label>
             <input 
               type="text" 
-              id="student-id" 
-              v-model="userInfo.studentId" 
+              id="teacher-id" 
+              v-model="userInfo.username" 
               readonly
             >
           </div>
@@ -70,6 +71,18 @@
               id="college" 
               v-model="userInfo.college" 
               :readonly="!isEditing"
+              placeholder="请填写学院"
+            >
+          </div>
+          
+          <div class="form-group">
+            <label for="department">系别</label>
+            <input 
+              type="text" 
+              id="department" 
+              v-model="userInfo.department" 
+              :readonly="!isEditing"
+              placeholder="请填写系别"
             >
           </div>
           
@@ -80,22 +93,15 @@
               id="email" 
               v-model="userInfo.email" 
               :readonly="!isEditing"
-            >
-          </div>
-          
-          <div class="form-group">
-            <label for="phone">手机号码</label>
-            <input 
-              type="tel" 
-              id="phone" 
-              v-model="userInfo.phone" 
-              :readonly="!isEditing"
+              placeholder="请填写邮箱地址"
             >
           </div>
           
           <div class="form-actions" v-if="isEditing">
-            <button type="button" class="cancel-btn" @click="cancelEdit">取消</button>
-            <button type="submit" class="save-btn">保存</button>
+            <button type="button" class="cancel-btn" @click="cancelEdit" :disabled="loading">取消</button>
+            <button type="submit" class="save-btn" :disabled="loading">
+              {{ loading ? '保存中...' : '保存' }}
+            </button>
           </div>
         </form>
       </section>
@@ -119,17 +125,6 @@
         
         <div class="security-item">
           <div class="security-info">
-            <i class="bi bi-phone-fill"></i>
-            <div>
-              <h3>手机绑定</h3>
-              <p>已绑定手机：{{ maskedPhone }}</p>
-            </div>
-          </div>
-          <button class="modify-btn" @click="modifyPhone">更换手机</button>
-        </div>
-        
-        <div class="security-item">
-          <div class="security-info">
             <i class="bi bi-envelope-fill"></i>
             <div>
               <h3>邮箱绑定</h3>
@@ -141,7 +136,7 @@
         
         <div class="security-tips">
           <i class="bi bi-info-circle-fill"></i>
-          <p>为保障您的账号安全，建议定期修改密码并绑定手机和邮箱</p>
+          <p>为保障您的账号安全，建议定期修改密码并绑定邮箱</p>
         </div>
       </section>
       
@@ -224,26 +219,27 @@
 </template>
 
 <script>
+import { getProfile, updateProfile } from '@/api/user'
+
 export default {
-  name: 'UserProfile',
+  name: 'TeacherProfile',
   data() {
     return {
       activeSection: 'basic-info',
       isEditing: false,
+      loading: false,
       viewMode: 'grid',
       selectedTimeRange: 'week',
       selectedTheme: 'blue',
       selectedFontSize: 'medium',
+      originalUserInfo: null, // 保存原始数据用于取消编辑
       userInfo: {
-        name: '张三',
-        studentId: '20230001',
-        college: '计算机科学学院',
-        major: '计算机科学与技术',
-        grade: '2023级',
-        email: 'zhangsan@example.com',
-        phone: '13800138000',
+        full_name: '',
+        username: '',
+        college: 'JI',
+        department: 'COMPUTER SCIENCE',
+        email: '',
         role: '教师',
-        department: '计算机科学系'
       },
       navItems: [
         { id: 'basic-info', text: '基本信息', icon: 'bi bi-person-fill' },
@@ -310,11 +306,8 @@ export default {
     }
   },
   computed: {
-    maskedPhone() {
-      return this.userInfo.phone ? this.userInfo.phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') : ''
-    },
     maskedEmail() {
-      return this.userInfo.email ? this.userInfo.email.replace(/(.{2}).*@(.*)/, '$1****@$2') : ''
+      return this.userInfo.email ? this.userInfo.email.replace(/(.{2}).*@(.*)/, '$1****@$2') : '未绑定'
     },
     filteredActivities() {
       // 根据选择的时间范围过滤活动
@@ -325,48 +318,73 @@ export default {
   methods: {
     // 获取头像图片
     getAvatarImage() {
-      // 根据用户角色获取对应头像
-      const savedUser = localStorage.getItem('userInfo')
-      if (savedUser) {
-        try {
-          const userInfo = JSON.parse(savedUser)
-          const roles = userInfo.roles || []
-          
-          if (roles.includes('super_admin') || roles.includes('admin') || roles.includes('administrator')) {
-            return require('@/assets/images/avatar-admin.svg')
-          } else if (roles.includes('teacher') || roles.includes('教师') || roles.includes('instructor')) {
-            return require('@/assets/images/avatar-teacher.svg')
-          } else {
-            return require('@/assets/images/avatar-student.svg')
-          }
-        } catch (e) {
-          return require('@/assets/images/avatar-teacher.svg')
-        }
-      }
-      
-      // 默认返回教师头像
+      // 教师页面直接返回教师头像
       return require('@/assets/images/avatar-teacher.svg')
     },
     switchSection(sectionId) {
       this.activeSection = sectionId
     },
     enableEdit() {
+      // 保存原始数据
+      this.originalUserInfo = JSON.parse(JSON.stringify(this.userInfo))
       this.isEditing = true
     },
     cancelEdit() {
       this.isEditing = false
-      // 这里应该重置表单数据，实际项目中可能需要从服务器重新获取
+      // 恢复原始数据
+      if (this.originalUserInfo) {
+        this.userInfo = JSON.parse(JSON.stringify(this.originalUserInfo))
+      }
     },
-    saveBasicInfo() {
-      this.isEditing = false
-      alert('个人信息已保存成功！')
-      // 实际项目中这里会发送API请求保存数据
+    async saveBasicInfo() {
+      if (this.loading) return
+      
+      // 检查token是否存在
+      const token = localStorage.getItem('token')
+      if (!token) {
+        alert('未登录，请先登录')
+        this.$router.push('/login')
+        return
+      }
+      
+      this.loading = true
+      try {
+        const basicInfo = {
+          email: this.userInfo.email || null
+        }
+        
+        const profileInfo = {
+          college: this.userInfo.college || null,
+          department: this.userInfo.department || null
+        }
+        
+        const result = await updateProfile({
+          basicInfo,
+          profileInfo
+        })
+        
+        if (result.code === 1) {
+          alert('个人信息已保存成功！')
+          this.isEditing = false
+          // 重新加载用户信息
+          await this.loadUserInfo()
+        } else {
+          alert(result.msg || '保存失败，请重试')
+        }
+      } catch (error) {
+        console.error('保存失败:', error)
+        if (error.message && error.message.includes('未登录')) {
+          alert('登录已过期，请重新登录')
+          this.$router.push('/login')
+        } else {
+          alert(error.message || '保存失败，请稍后重试')
+        }
+      } finally {
+        this.loading = false
+      }
     },
     modifyPassword() {
       alert('即将跳转到修改密码页面...')
-    },
-    modifyPhone() {
-      alert('即将跳转到更换手机页面...')
     },
     modifyEmail() {
       alert('即将跳转到更换邮箱页面...')
@@ -420,10 +438,101 @@ export default {
         }
       }
       input.click()
+    },
+    
+    // 加载用户信息
+    async loadUserInfo() {
+      this.loading = true
+      try {
+        const token = localStorage.getItem('token')
+        if (!token) {
+          console.log('未找到token，尝试从localStorage获取用户信息')
+          // 尝试从localStorage获取用户信息作为后备
+          const savedUser = localStorage.getItem('userInfo')
+          if (savedUser) {
+            try {
+              const parsedUser = JSON.parse(savedUser)
+              this.userInfo = {
+                full_name: parsedUser.full_name || parsedUser.name || '',
+                username: parsedUser.username || '',
+                email: parsedUser.email || '',
+                role: parsedUser.role || '教师',
+                college: 'JI',
+                department: 'COMPUTER SCIENCE',
+              }
+              console.log('从localStorage加载的教师信息:', this.userInfo)
+            } catch (parseError) {
+              console.error('解析localStorage用户信息失败:', parseError)
+            }
+          }
+          return
+        }
+
+        console.log('正在从API获取教师信息...')
+        const result = await getProfile()
+        
+        if (result.code === 1 && result.data) {
+          const data = result.data
+          this.userInfo = {
+            full_name: data.full_name || data.name || '',
+            username: data.username || '',
+            email: data.email || '',
+            role: data.role || '教师',
+            college: 'JI',
+            department: 'COMPUTER SCIENCE',
+          }
+          console.log('从API加载的教师信息:', this.userInfo)
+          
+          // 同步更新localStorage
+          localStorage.setItem('userInfo', JSON.stringify(this.userInfo))
+        } else {
+          console.log('API返回无效数据，使用localStorage备用方案')
+          // API失败时使用localStorage作为后备
+          const savedUser = localStorage.getItem('userInfo')
+          if (savedUser) {
+            try {
+              const parsedUser = JSON.parse(savedUser)
+              this.userInfo = {
+                full_name: parsedUser.full_name || parsedUser.name || '',
+                username: parsedUser.username || '',
+                email: parsedUser.email || '',
+                role: parsedUser.role || '教师',
+                college: 'JI',
+                department: 'COMPUTER SCIENCE',
+              }
+            } catch (parseError) {
+              console.error('解析localStorage用户信息失败:', parseError)
+            }
+          }
+        }
+      } catch (error) {
+        console.error('加载教师信息失败:', error)
+        // API失败时使用localStorage作为后备
+        const savedUser = localStorage.getItem('userInfo')
+        if (savedUser) {
+          try {
+            const parsedUser = JSON.parse(savedUser)
+            this.userInfo = {
+              full_name: parsedUser.full_name || parsedUser.name || '',
+              username: parsedUser.username || '',
+              email: parsedUser.email || '',
+              role: parsedUser.role || '教师',
+              college: 'JI',
+              department: 'COMPUTER SCIENCE',
+            }
+            console.log('错误回退：从localStorage加载的教师信息:', this.userInfo)
+          } catch (parseError) {
+            console.error('解析localStorage用户信息失败:', parseError)
+          }
+        }
+      } finally {
+        this.loading = false
+      }
     }
   },
-  mounted() {
-    console.log('个人中心页面已加载')
+  async mounted() {
+    console.log('教师个人中心页面已加载')
+    await this.loadUserInfo()
   }
 }
 </script>

@@ -363,7 +363,7 @@ onMounted(() => {
 
 .loading-state i, .empty-state i {
   font-size: 48px;
-  margin-bottom: 15px;
+  margin-block-end: 15px;
   color: #999;
 }
 
@@ -403,7 +403,7 @@ onMounted(() => {
 .hw-info {
   flex: 1;
   cursor: pointer;
-  padding-right: 20px;
+  padding-inline-end: 20px;
 }
 
 .hw-info h4 {
@@ -430,7 +430,7 @@ onMounted(() => {
 
 .deadline::before {
   content: '⏰';
-  margin-right: 5px;
+  margin-inline-end: 5px;
 }
 
 .hw-status {
@@ -510,10 +510,10 @@ onMounted(() => {
 /* 学情分析弹窗 */
 .analysis-modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  inset-block-end: 0;
   background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
@@ -525,9 +525,9 @@ onMounted(() => {
 .analysis-modal {
   background: white;
   border-radius: 16px;
-  width: 90%;
-  max-width: 700px;
-  max-height: 90vh;
+  inline-size: 90%;
+  max-inline-size: 700px;
+  max-block-size: 90vh;
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
@@ -537,7 +537,7 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 24px 30px;
-  border-bottom: 1px solid #eee;
+  border-block-end: 1px solid #eee;
   background: #f8f9fa;
 }
 
@@ -555,8 +555,8 @@ onMounted(() => {
   color: #666;
   cursor: pointer;
   padding: 0;
-  width: 32px;
-  height: 32px;
+  inline-size: 32px;
+  block-size: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -571,7 +571,7 @@ onMounted(() => {
 
 .modal-body {
   padding: 30px;
-  max-height: 60vh;
+  max-block-size: 60vh;
   overflow-y: auto;
 }
 
@@ -586,7 +586,7 @@ onMounted(() => {
 
 .analysis-loading i {
   font-size: 32px;
-  margin-bottom: 15px;
+  margin-block-end: 15px;
   color: #2A5CAA;
 }
 
@@ -600,23 +600,23 @@ onMounted(() => {
   background: #f8f9fa;
   border-radius: 12px;
   padding: 20px;
-  border-left: 4px solid;
+  border-inline-start: 4px solid;
 }
 
 .analysis-section:nth-child(1) {
-  border-left-color: #52c41a;
+  border-inline-start-color: #52c41a;
 }
 
 .analysis-section:nth-child(2) {
-  border-left-color: #faad14;
+  border-inline-start-color: #faad14;
 }
 
 .analysis-section:nth-child(3) {
-  border-left-color: #1890ff;
+  border-inline-start-color: #1890ff;
 }
 
 .analysis-section.score-analysis {
-  border-left-color: #722ed1;
+  border-inline-start-color: #722ed1;
 }
 
 .analysis-section h4 {
@@ -651,7 +651,7 @@ onMounted(() => {
 
 .analysis-error i {
   font-size: 48px;
-  margin-bottom: 15px;
+  margin-block-end: 15px;
 }
 
 /* 响应式设计 */
@@ -663,7 +663,7 @@ onMounted(() => {
   }
   
   .hw-info {
-    padding-right: 0;
+    padding-inline-end: 0;
   }
   
   .hw-status {
@@ -673,7 +673,7 @@ onMounted(() => {
   }
   
   .analysis-modal {
-    width: 95%;
+    inline-size: 95%;
     margin: 20px;
   }
   

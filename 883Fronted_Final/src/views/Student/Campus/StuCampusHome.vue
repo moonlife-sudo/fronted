@@ -32,27 +32,32 @@
             <div class="card-header">
               <i class="bi bi-newspaper"></i>
               <h3>最新帖子</h3>
+              <button @click="refreshPosts" class="refresh-btn" :disabled="loadingState">
+                <i class="bi bi-arrow-clockwise" :class="{ 'spinning': loadingState }"></i>
+              </button>
             </div>
             <div class="card-body">
-              <div class="post-item">
-                <h4>宿舍热水供应时间调整</h4>
-                <p class="post-excerpt">从下周一开始，宿舍热水供应时间调整为...</p>
-                <div class="post-meta">
-                  <span>王老师</span>
-                  <span>2023-06-14</span>
-                </div>
+              <div v-if="loadingState" class="loading-state">
+                <i class="bi bi-hourglass-split"></i>
+                <span>加载中...</span>
               </div>
-              <div class="post-item">
-                <h4>关于宿舍安全检查的通知</h4>
-                <p class="post-excerpt">下周三将进行全校宿舍安全检查，请各位同学...</p>
-                <div class="post-meta">
-                  <span>李老师</span>
-                  <span>2023-06-12</span>
-                </div>
+              <div v-else-if="latestPosts.length === 0" class="empty-state">
+                <i class="bi bi-chat-dots"></i>
+                <span>暂无帖子，快来发布第一条吧！</span>
               </div>
-              <router-link to="/student/forum" class="text-link">
-                查看更多帖子 <i class="bi bi-arrow-right"></i>
-              </router-link>
+              <div v-else>
+                <div v-for="post in latestPosts" :key="post.id" class="post-item">
+                  <h4>{{ post.title }}</h4>
+                  <p class="post-excerpt">{{ post.content }}</p>
+                  <div class="post-meta">
+                    <span>{{ post.author }}</span>
+                    <span>{{ formatDate(post.createTime) }}</span>
+                  </div>
+                </div>
+                <router-link to="/student/forum" class="text-link">
+                  查看更多帖子 <i class="bi bi-arrow-right"></i>
+                </router-link>
+              </div>
             </div>
           </div>
 
@@ -70,6 +75,7 @@
                     id="post-title" 
                     v-model="post.title"
                     placeholder="输入帖子标题"
+                    :disabled="submitting"
                   >
                 </div>
                 <div class="form-group">
@@ -79,11 +85,12 @@
                     rows="3" 
                     v-model="post.content"
                     placeholder="输入帖子内容"
+                    :disabled="submitting"
                   ></textarea>
                 </div>
-                <button type="submit" class="primary-btn">
-                  <i class="bi bi-send"></i>
-                  <span>发布</span>
+                <button type="submit" class="primary-btn" :disabled="submitting">
+                  <i class="bi" :class="submitting ? 'bi-hourglass-split spinning' : 'bi-send'"></i>
+                  <span>{{ submitting ? '发布中...' : '发布' }}</span>
                 </button>
               </form>
             </div>
@@ -103,28 +110,119 @@ export default {
       post: {
         title: '',
         content: ''
+      },
+      submitting: false // 发布状态
+    }
+  },
+  computed: {
+    // 从store获取最新帖子（首页只显示前3条）
+    latestPosts() {
+      return this.$store.getters.getLatestPosts(3)
+    },
+    // 从store获取加载状态
+    loadingState() {
+      return this.$store.getters.getLoadingState
+    },
+    // 获取当前用户名
+    currentUserName() {
+      try {
+        const savedUser = localStorage.getItem('userInfo')
+        if (savedUser) {
+          const parsedUser = JSON.parse(savedUser)
+          return parsedUser.full_name || parsedUser.name || parsedUser.username || '同学'
+        }
+      } catch (e) {
+        console.error('解析用户信息失败:', e)
       }
+      return '同学' // 默认值
     }
   },
   methods: {
     switchRole(role) {
       this.currentRole = role
     },
-    submitPost() {
+    
+    // 获取最新帖子列表
+    async fetchPosts() {
+      try {
+        await this.$store.dispatch('fetchPosts')
+      } catch (error) {
+        console.error('获取帖子失败:', error)
+        this.$message?.error('获取帖子失败，请稍后重试')
+      }
+    },
+    
+    // 刷新帖子列表
+    async refreshPosts() {
+      await this.fetchPosts()
+    },
+    
+    // 提交新帖子
+    async submitPost() {
       if (!this.post.title || !this.post.content) {
         alert('请填写标题和内容')
         return
       }
       
-      // 这里可以添加实际的提交逻辑
-      alert(`帖子"${this.post.title}"已发布成功!`)
-      this.post.title = ''
-      this.post.content = ''
+      try {
+        this.submitting = true
+        
+        // 通过store发布帖子
+        await this.$store.dispatch('createPost', {
+          title: this.post.title,
+          content: this.post.content,
+          author: this.currentUserName // 动态获取当前用户名
+        })
+        
+        // 清空表单
+        this.post.title = ''
+        this.post.content = ''
+        
+        // 显示成功消息
+        this.$message?.success('帖子发布成功！') || alert('帖子发布成功！')
+        
+      } catch (error) {
+        console.error('发布帖子失败:', error)
+        this.$message?.error('发布失败，请稍后重试') || alert('发布失败，请稍后重试')
+      } finally {
+        this.submitting = false
+      }
+    },
+    
+    // 格式化日期
+    formatDate(dateStr) {
+      const date = new Date(dateStr)
+      const now = new Date()
+      const diff = now - date
+      const diffDays = Math.floor(diff / (1000 * 60 * 60 * 24))
+      
+      if (diffDays === 0) {
+        const diffHours = Math.floor(diff / (1000 * 60 * 60))
+        const diffMinutes = Math.floor(diff / (1000 * 60))
+        
+        if (diffHours === 0) {
+          if (diffMinutes < 1) return '刚刚'
+          return `${diffMinutes}分钟前`
+        }
+        return `${diffHours}小时前`
+      } else if (diffDays === 1) {
+        return '昨天'
+      } else if (diffDays < 7) {
+        return `${diffDays}天前`
+      } else {
+        return date.toLocaleDateString('zh-CN', { 
+          month: '2-digit', 
+          day: '2-digit' 
+        })
+      }
     }
   },
-  mounted() {
+  
+  async mounted() {
     // 默认显示学生视图
     this.currentRole = 'student'
+    // 初始化时获取帖子列表
+    await this.fetchPosts()
   }
 }
 </script>
@@ -544,5 +642,85 @@ export default {
   .home-page .container {
     padding: 80px 15px 20px;
   }
+}
+
+/* 刷新按钮样式 */
+.home-page .card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.home-page .refresh-btn {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-page .refresh-btn:hover:not(:disabled) {
+  background-color: var(--primary-light);
+}
+
+.home-page .refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.home-page .refresh-btn i {
+  font-size: 1rem;
+  transition: transform 0.3s ease;
+}
+
+/* 旋转动画 */
+.home-page .spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 加载和空状态样式 */
+.home-page .loading-state,
+.home-page .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: var(--text-lighter);
+  text-align: center;
+}
+
+.home-page .loading-state i,
+.home-page .empty-state i {
+  font-size: 2rem;
+  margin-bottom: 12px;
+  color: var(--text-lighter);
+}
+
+.home-page .loading-state i {
+  animation: spin 1s linear infinite;
+}
+
+/* 按钮禁用状态 */
+.home-page .primary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--text-lighter);
+}
+
+.home-page .form-group input:disabled,
+.home-page .form-group textarea:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
 }
 </style>

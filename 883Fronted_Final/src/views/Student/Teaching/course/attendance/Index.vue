@@ -7,7 +7,7 @@
     <div class="card active-session-card">
       <div class="card-header">
         <h3>📢 正在签到：{{ courseName }}</h3>
-        <div class="timer">剩余时间：05:23</div>
+        
       </div>
       <div class="card-body">
         <div class="session-info">

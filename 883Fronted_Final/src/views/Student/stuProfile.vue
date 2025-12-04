@@ -104,18 +104,6 @@
             >
           </div>
           
-          <div class="form-group">
-            <label for="phone">手机号码</label>
-            <input 
-              type="tel" 
-              id="phone" 
-              :value="userInfo.phone_number || ''"
-              @input="userInfo.phone_number = $event.target.value"
-              :placeholder="!userInfo.phone_number ? '未填写' : ''"
-              :readonly="!isEditing"
-            >
-          </div>
-          
           <div class="form-actions" v-if="isEditing">
             <button type="button" class="cancel-btn" @click="cancelEdit">取消</button>
             <button type="submit" class="save-btn">保存</button>
@@ -142,10 +130,10 @@
         
         <div class="security-item">
           <div class="security-info">
-            <i class="bi bi-phone-fill"></i>
+            <i class="bi bi-envelope-fill"></i>
             <div>
-              <h3>手机绑定</h3>
-              <p>已绑定手机：{{ maskedPhone }}</p>
+              <h3>邮箱绑定</h3>
+              <p>已绑定邮箱：{{ maskedEmail }}</p>
             </div>
           </div>
           <button class="modify-btn" @click="enableEdit">编辑信息</button>
@@ -187,7 +175,7 @@
         
         <div class="security-tips">
           <i class="bi bi-info-circle-fill"></i>
-          <p>为保障您的账号安全，建议定期修改密码并绑定手机和邮箱</p>
+          <p>为保障您的账号安全，建议定期修改密码并绑定邮箱</p>
         </div>
       </section>
       
@@ -199,6 +187,12 @@
         </div>
         
         <div class="notification-list">
+          <div v-if="notifications.length === 0" class="empty-notifications">
+            <i class="bi bi-bell-slash" style="font-size: 48px; color: #ccc; margin-bottom: 16px;"></i>
+            <p style="color: #999; font-size: 16px;">暂无消息通知</p>
+            <p style="color: #ccc; font-size: 14px;">所有消息已处理完成</p>
+          </div>
+          
           <div 
             v-for="notification in notifications" 
             :key="notification.id"
@@ -213,6 +207,14 @@
               <p>{{ notification.content }}</p>
               <span class="notification-time">{{ notification.time }}</span>
             </div>
+            <button 
+              v-if="notification.unread"
+              class="mark-read-btn" 
+              @click="markAsRead(notification.id)"
+              title="标记为已读"
+            >
+              <i class="bi bi-check"></i>
+            </button>
           </div>
         </div>
       </section>
@@ -291,7 +293,6 @@ export default {
         username: '',
         student_id_number: '',
         email: '',
-        phone_number: '',
         avatar_url: '',
         major: '',
         class_name: '',
@@ -363,9 +364,6 @@ export default {
     }
   },
   computed: {
-    maskedPhone() {
-      return this.userInfo.phone_number ? this.userInfo.phone_number.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') : '未绑定'
-    },
     maskedEmail() {
       return this.userInfo.email ? this.userInfo.email.replace(/(.{2}).*@(.*)/, '$1****@$2') : '未绑定'
     },
@@ -426,8 +424,7 @@ export default {
       this.loading = true
       try {
         const basicInfo = {
-          email: this.userInfo.email || null,
-          phone_number: this.userInfo.phone_number || null
+          email: this.userInfo.email || null
         }
         
         const profileInfo = {
@@ -526,7 +523,6 @@ export default {
             username: data.username || '',
             student_id_number: data.profile?.student_id_number || '',
             email: data.email || '',
-            phone_number: data.phone_number || '',
             avatar_url: data.avatar_url || '',
             major: data.profile?.major || '',
             class_name: data.profile?.class_name || '',
@@ -553,7 +549,6 @@ export default {
                 username: userData.username || '',
                 student_id_number: userData.student_id_number || '',
                 email: userData.email || '',
-                phone_number: userData.phone_number || '',
                 avatar_url: userData.avatar_url || '',
                 major: userData.major || '',
                 class_name: userData.class_name || '',
@@ -580,10 +575,23 @@ export default {
       }
     },
     markAllAsRead() {
-      this.notifications.forEach(notification => {
-        notification.unread = false
-      })
-      alert('所有通知已标记为已读')
+      // 过滤掉所有未读消息，只保留已读消息（如果有的话）
+      const readCount = this.notifications.filter(n => n.unread).length
+      
+      if (readCount === 0) {
+        alert('没有未读消息')
+        return
+      }
+      
+      // 移除所有未读消息
+      this.notifications = this.notifications.filter(notification => !notification.unread)
+      
+      alert(`已删除 ${readCount} 条未读消息`)
+    },
+    
+    // 单个消息标记为已读并移除
+    markAsRead(notificationId) {
+      this.notifications = this.notifications.filter(notification => notification.id !== notificationId)
     },
     changeViewMode(mode) {
       this.viewMode = mode
@@ -749,5 +757,62 @@ export default {
 .password-dialog .save-btn:disabled {
   background: #ccc;
   cursor: not-allowed;
+}
+
+/* 空状态样式 */
+.empty-notifications {
+  text-align: center;
+  padding: 60px 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+/* 消息项样式优化 */
+.notification-item {
+  position: relative;
+  padding-right: 50px; /* 为标记按钮留出空间 */
+}
+
+.mark-read-btn {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  background: #2A5CAA;
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(42, 92, 170, 0.2);
+}
+
+.mark-read-btn:hover {
+  background: #1e4b8b;
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* 全部已读按钮样式 */
+.mark-all-read {
+  background: #52c41a;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.mark-all-read:hover {
+  background: #389e0d;
+  transform: translateY(-1px);
 }
 </style>

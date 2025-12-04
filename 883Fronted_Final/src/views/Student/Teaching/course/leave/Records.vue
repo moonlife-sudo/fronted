@@ -8,7 +8,13 @@
     </div>
 
     <div class="records-container">
-      <div v-for="item in list" :key="item.id" class="record-card">
+      <div v-if="leaveRecords.length === 0" class="empty-state">
+        <i class="bi bi-calendar-x" style="font-size: 48px; color: #ccc; margin-bottom: 16px;"></i>
+        <p style="color: #999; font-size: 16px;">暂无请假记录</p>
+        <p style="color: #ccc; font-size: 14px;">点击右上角"发起申请"提交您的第一个请假申请</p>
+      </div>
+      
+      <div v-for="item in leaveRecords" :key="item.id" class="record-card">
         <div class="card-left">
           <div class="date-box">
             <span class="month">{{ item.month }}月</span>
@@ -18,6 +24,7 @@
             <div class="type-tag" :class="item.typeClass">{{ item.type }}</div>
             <p class="reason">{{ item.reason }}</p>
             <p class="duration">共 {{ item.duration }} 天</p>
+            <p class="course-name">课程：{{ item.courseName }}</p>
           </div>
         </div>
         <div class="card-right">
@@ -29,31 +36,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed } from 'vue'
+import { useStore } from 'vuex'
 
-const list = ref([
-  {
-    id: 1, month: '11', day: '20',
-    type: '病假', typeClass: 'sick',
-    reason: '突发高烧，去校医院就诊',
-    duration: 1,
-    status: 'approved', statusText: '已通过'
-  },
-  {
-    id: 2, month: '10', day: '15',
-    type: '事假', typeClass: 'personal',
-    reason: '家里有急事需回家处理',
-    duration: 2,
-    status: 'rejected', statusText: '已驳回'
-  },
-  {
-    id: 3, month: '09', day: '28',
-    type: '事假', typeClass: 'personal',
-    reason: '参加学术会议',
-    duration: 3,
-    status: 'approved', statusText: '已通过'
-  }
-])
+const store = useStore()
+
+// 从Vuex获取请假记录
+const leaveRecords = computed(() => store.getters.getAllLeaveRecords)
 </script>
 
 <style scoped>
@@ -93,8 +82,18 @@ const list = ref([
 
 .reason { margin: 0; font-size: 15px; font-weight: 500; color: #333; }
 .duration { margin: 0; font-size: 12px; color: #999; }
+.course-name { margin: 0; font-size: 12px; color: #666; margin-top: 2px; }
 
 .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; }
 .status-badge.approved { background: #f6ffed; color: #52c41a; }
 .status-badge.rejected { background: #fff2e8; color: #fa8c16; }
+.status-badge.pending { background: #e6f7ff; color: #1890ff; }
+
+.empty-state {
+  text-align: center; 
+  padding: 60px 20px; 
+  background: white; 
+  border-radius: 12px; 
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
 </style>

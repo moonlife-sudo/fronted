@@ -130,9 +130,11 @@
               <p>{{ book.author }}</p>
               <button 
                 class="borrow-btn"
+                :class="getBorrowButtonClass(book.borrowStatus)"
+                :disabled="book.borrowStatus !== 'available'"
                 @click="borrowBook(book.id)"
               >
-                立即借阅
+                {{ getBorrowButtonText(book.borrowStatus) }}
               </button>
             </div>
           </div>
@@ -205,22 +207,26 @@ export default {
         {
           id: 1,
           title: '深入理解计算机系统',
-          author: 'Randal E.Bryant'
+          author: 'Randal E.Bryant',
+          borrowStatus: 'available' // available, applied, borrowed
         },
         {
           id: 2,
           title: '机器学习实战',
-          author: 'Peter Harrington'
+          author: 'Peter Harrington',
+          borrowStatus: 'available'
         },
         {
           id: 3,
           title: '设计心理学',
-          author: 'Donald A.Norman'
+          author: 'Donald A.Norman',
+          borrowStatus: 'available'
         },
         {
           id: 4,
           title: '人类简史',
-          author: 'Yuval Noah Harari'
+          author: 'Yuval Noah Harari',
+          borrowStatus: 'available'
         }
       ],
       tags: [
@@ -270,8 +276,23 @@ export default {
     },
     borrowBook(bookId) {
       const book = this.recommendedBooks.find(b => b.id === bookId);
-      if (book) {
-        alert(`已成功借阅《${book.title}》！请到图书馆服务台领取`);
+      if (book && book.borrowStatus === 'available') {
+        book.borrowStatus = 'applied';
+        alert(`已申请借阅《${book.title}》！请等待审核通过`);
+        
+        // 模拟审核过程，3秒后状态变为已借阅
+        setTimeout(() => {
+          book.borrowStatus = 'borrowed';
+          // 可以在这里添加通知功能
+          this.$store.dispatch('addNotification', {
+            id: Date.now(),
+            type: 'library_approval',
+            title: '借阅申请通过',
+            message: `您申请的图书《${book.title}》已通过审核，请到图书馆领取`,
+            time: new Date().toLocaleString(),
+            read: false
+          });
+        }, 3000);
       }
     },
     toggleTag(tagId) {
@@ -297,6 +318,22 @@ export default {
         'pending': '审核中'
       };
       return statusMap[status] || status;
+    },
+    getBorrowButtonText(status) {
+      const statusMap = {
+        'available': '立即借阅',
+        'applied': '已申请借阅',
+        'borrowed': '已借阅'
+      };
+      return statusMap[status] || '立即借阅';
+    },
+    getBorrowButtonClass(status) {
+      const classMap = {
+        'available': 'available',
+        'applied': 'applied',
+        'borrowed': 'borrowed'
+      };
+      return classMap[status] || 'available';
     }
   }
 }
@@ -772,6 +809,30 @@ header {
 
 .borrow-btn:hover {
   background: #3d8e40;
+}
+
+/* 借阅按钮不同状态的样式 */
+.borrow-btn.applied {
+  background: #ff9800;
+  cursor: not-allowed;
+}
+
+.borrow-btn.applied:hover {
+  background: #ff9800;
+}
+
+.borrow-btn.borrowed {
+  background: #9e9e9e;
+  cursor: not-allowed;
+}
+
+.borrow-btn.borrowed:hover {
+  background: #9e9e9e;
+}
+
+.borrow-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 /* 标签区域 */
