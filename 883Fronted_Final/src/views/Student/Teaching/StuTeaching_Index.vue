@@ -161,8 +161,8 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.student-dashboard { padding: 24px; max-width: 1400px; margin: 0 auto; }
-.page-header { margin-bottom: 32px; }
+.student-dashboard { padding: 24px; max-inline-size: 1400px; margin: 0 auto; }
+.page-header { margin-block-end: 32px; }
 .page-header h1 { font-size: 28px; color: #333; margin: 0 0 8px 0; }
 .page-header p { color: #666; }
 
@@ -177,7 +177,7 @@ onMounted(() => {
 
 .loading-state i, .empty-state i {
   font-size: 48px;
-  margin-bottom: 15px;
+  margin-block-end: 15px;
   color: #999;
 }
 
@@ -206,7 +206,7 @@ onMounted(() => {
 .course-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); }
 
 .card-cover {
-  height: 120px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start;
+  block-size: 120px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start;
 }
 .semester-tag {
   background: rgba(0, 0, 0, 0.2); color: #fff; padding: 4px 8px;
@@ -217,12 +217,12 @@ onMounted(() => {
 .card-content { padding: 20px; }
 .course-title { font-size: 18px; font-weight: 600; color: #333; margin: 0 0 16px 0; line-height: 1.4; }
 
-.course-meta { display: flex; justify-content: space-between; margin-bottom: 20px; color: #666; font-size: 14px; }
+.course-meta { display: flex; justify-content: space-between; margin-block-end: 20px; color: #666; font-size: 14px; }
 .meta-item { display: flex; align-items: center; gap: 6px; }
 .icon { font-style: normal; }
 
 .enter-btn {
-  width: 100%; padding: 10px; background: transparent; border: 1px solid #2A5CAA;
+  inline-size: 100%; padding: 10px; background: transparent; border: 1px solid #2A5CAA;
   color: #2A5CAA; border-radius: 6px; font-weight: 500; transition: all 0.2s;
 }
 .course-card:hover .enter-btn { background: #2A5CAA; color: #fff; }

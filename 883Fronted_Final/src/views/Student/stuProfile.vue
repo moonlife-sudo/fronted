@@ -188,7 +188,7 @@
         
         <div class="notification-list">
           <div v-if="notifications.length === 0" class="empty-notifications">
-            <i class="bi bi-bell-slash" style="font-size: 48px; color: #ccc; margin-bottom: 16px;"></i>
+            <i class="bi bi-bell-slash" style="font-size: 48px; color: #ccc; margin-block-end: 16px;"></i>
             <p style="color: #999; font-size: 16px;">暂无消息通知</p>
             <p style="color: #ccc; font-size: 14px;">所有消息已处理完成</p>
           </div>
@@ -669,10 +669,10 @@ export default {
 /* 密码对话框样式 */
 .password-dialog-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  inset-block-end: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
@@ -684,30 +684,30 @@ export default {
   background: white;
   border-radius: 12px;
   padding: 30px;
-  width: 90%;
-  max-width: 500px;
+  inline-size: 90%;
+  max-inline-size: 500px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .password-dialog h3 {
-  margin-bottom: 20px;
+  margin-block-end: 20px;
   color: #333;
   font-size: 20px;
 }
 
 .password-dialog .form-group {
-  margin-bottom: 20px;
+  margin-block-end: 20px;
 }
 
 .password-dialog .form-group label {
   display: block;
-  margin-bottom: 8px;
+  margin-block-end: 8px;
   color: #666;
   font-weight: 500;
 }
 
 .password-dialog .form-group input {
-  width: 100%;
+  inline-size: 100%;
   padding: 10px 15px;
   border: 1px solid #ddd;
   border-radius: 6px;
@@ -724,7 +724,7 @@ export default {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 20px;
+  margin-block-start: 20px;
 }
 
 .password-dialog .cancel-btn,
@@ -771,19 +771,19 @@ export default {
 /* 消息项样式优化 */
 .notification-item {
   position: relative;
-  padding-right: 50px; /* 为标记按钮留出空间 */
+  padding-inline-end: 50px; /* 为标记按钮留出空间 */
 }
 
 .mark-read-btn {
   position: absolute;
-  top: 50%;
-  right: 15px;
+  inset-block-start: 50%;
+  inset-inline-end: 15px;
   transform: translateY(-50%);
   background: #2A5CAA;
   color: white;
   border: none;
-  width: 32px;
-  height: 32px;
+  inline-size: 32px;
+  block-size: 32px;
   border-radius: 50%;
   cursor: pointer;
   display: flex;

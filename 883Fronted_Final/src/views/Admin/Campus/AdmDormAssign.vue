@@ -59,6 +59,7 @@
                   </div>
                   <span v-else class="text-gray">-</span>
                 </td>
+                
                 <td>
                   <span :class="['status-badge', student.isAssigned ? 'status-done' : 'status-pending']">
                     {{ student.isAssigned ? '已分配' : '待分配' }}
