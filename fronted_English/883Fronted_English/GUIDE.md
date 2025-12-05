@@ -73,7 +73,7 @@ java GeneratePasswordHash
 **使用方法**:
 ```sql
 -- 在MySQL数据库中执行此SQL文件
-mysql -u username -p database_name < update_passwords.sql
+mysql -u root -p 123456 campus_system < update_passwords.sql
 ```
 
 ## 默认用户信息
@@ -106,6 +106,3 @@ mysql -u username -p database_name < update_passwords.sql
 2. 是否有足够的权限执行SQL语句
 3. BCrypt库的版本兼容性
 
-## 许可证
-
-本工具集仅供学习和开发使用，请根据实际项目需求进行调整和完善。
